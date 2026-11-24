@@ -13,10 +13,11 @@ const ORCAMENTO = { href: "/orcamento", label: "Orçamento", icon: "M3 7h18v12H3
 const METAS = { href: "/metas", label: "Metas", hint: "Reserva, viagens, compras grandes", icon: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" };
 const COMPROVANTE = { href: "/importar", label: "Importar com IA", hint: "Fotos, PDFs, planilhas e extratos", icon: "M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" };
 const EMPRESTIMOS = { href: "/emprestimos", label: "Empréstimos", hint: "O que emprestou e falta receber", icon: "M7 11l3-3 4 4 3-3M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" };
+const ASSISTENTE = { href: "/assistente", label: "Assistente", hint: "Pergunte para onde o dinheiro vai", icon: "M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4L12 3ZM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" };
 const CATEGORIAS = { href: "/categorias", label: "Categorias", hint: "As tags dos seus gastos", icon: "M7 7h.01M3 3h8l10 10-8 8L3 11V3Z" };
 
-const NAV = [PAINEL, ANALISES, GASTOS, COMPROVANTE, ORCAMENTO, METAS, EMPRESTIMOS, CATEGORIAS];
-const MORE = [COMPROVANTE, ANALISES, METAS, EMPRESTIMOS, CATEGORIAS];
+const NAV = [PAINEL, ASSISTENTE, ANALISES, GASTOS, COMPROVANTE, ORCAMENTO, METAS, EMPRESTIMOS, CATEGORIAS];
+const MORE = [ASSISTENTE, COMPROVANTE, ANALISES, METAS, EMPRESTIMOS, CATEGORIAS];
 
 function isActive(href: string, pathname: string | null) {
   if (pathname === null) return false;

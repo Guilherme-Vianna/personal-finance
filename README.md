@@ -10,6 +10,7 @@ Irmão do [Horas na Vida](https://github.com/Guilherme-Vianna/personal-life-hour
 - **Conferência do mês** (no Orçamento): cada item programado aparece como ✓ relacionado (com data, valor e origem), ⏳ pendente, ⚠️ atrasado ou ⏭️ pulado.
 - **Orçamento**: rendas, contas fixas e investimentos programados com início e fim (ou sem fim, ou parcelados). Qualquer mês pode ter um ajuste (outro valor ou "pular este mês"). Orçamento pessoal mensal e divisão ideal da renda (padrão 50/20/30).
 - **Metas**: valor-alvo e prazo opcional; depósitos manuais e investimentos programados ligados à meta enchem a barra. Mostra média mensal, previsão e quanto guardar por mês para bater o prazo.
+- **Assistente**: agente (LangChain + Gemini) que responde perguntas como "para onde está indo meu dinheiro?" consultando seus dados de verdade (resumo do mês, categorias, maiores gastos, comparação entre meses, contas programadas, metas e empréstimos) e sugere onde economizar.
 - **Análises**: janelas de 3, 6 ou 12 meses; gastos por mês contra o orçamento, tendência por categoria, maiores gastos, formas de pagamento, dias da semana e insights automáticos.
 - **Empréstimos**: gastos e parcelas do cartão marcados como "emprestado" para alguém da família. São só registro (não entram no orçamento, no balanço nem na sobra, porque o dinheiro volta); aqui aparecem por pessoa: quanto foi emprestado, quanto voltou, saldo a receber e parcelas que ainda vão cair.
 - **Categorias**: cor, tipo (gasto/entrada) e "fora do orçamento pessoal" (ex.: livros, compras de longo prazo). Apagar uma categoria em uso deixa os itens sem categoria (órfãos) e o app avisa para recategorizar.
@@ -46,6 +47,16 @@ Importa a aba **Orcamento** (contas fixas, rendas, investimento, orçamento pess
 2. Na Vercel, configure `DATABASE_URL` e `GEMINI_API_KEY` (opcional: `GEMINI_MODEL`, `NEXT_PUBLIC_TIME_ZONE`).
 3. O app não tem senha: qualquer pessoa com o link consegue ver e editar os dados.
 
+## Servidor MCP
+
+O app expõe as mesmas ferramentas de análise do Assistente (somente leitura) em `/api/mcp` (Streamable HTTP), para usar em qualquer cliente MCP:
+
+```json
+{ "grana-na-vida": { "url": "https://SEU-APP.vercel.app/api/mcp" } }
+```
+
+Para clientes só stdio: `npx -y mcp-remote https://SEU-APP.vercel.app/api/mcp`. Ferramentas: `resumo_do_mes`, `gastos_por_categoria`, `maiores_gastos`, `comparar_meses`, `buscar_lancamentos`, `contas_programadas`, `metas`, `emprestimos`, `categorias`.
+
 ## API
 
 | Método | Rota | Descrição |
@@ -69,6 +80,8 @@ Importa a aba **Orcamento** (contas fixas, rendas, investimento, orçamento pess
 | GET / PUT | `/api/settings` | Orçamento pessoal e divisão da renda |
 | GET | `/api/stats` | Painel do mês (`month`, `includeOutside`) |
 | GET | `/api/descriptions` | Sugestões de descrições já usadas |
+| POST | `/api/agent` | Pergunta ao assistente (`{messages: [{role, content}]}`) → `{reply, tools}` |
+| POST | `/api/mcp` | Servidor MCP (ferramentas de análise somente leitura) |
 | POST | `/api/ai/extract` | Lê um arquivo (`multipart`: `file`, `hint`) e devolve lançamentos sugeridos (campos incertos vêm `null`; `duplicateOf` indica possível duplicado) |
 
 Erros de validação retornam 422 com `fieldErrors`.

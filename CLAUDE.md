@@ -43,6 +43,9 @@ Sibling of personal-life-hours-tracker: same stack, UX and conventions.
 - AI import links entries to planned items (`planned` code from the model, falling back to an exact amount match). Linked
   entries are saved as `recurring_payments` (one per item and month), never as transactions; a different amount upserts that
   month's override. `checkStatus` (paid / pending / overdue / skipped) drives the Orçamento "Conferência".
+- Analysis tools live once in `src/lib/agent/tools.ts` (read-only, Portuguese keys, Zod schemas with optional fields only) and
+  are served both by the MCP server (`/api/mcp`, `mcp-handler` + `@modelcontextprotocol/server` v2) and by the in-app agent
+  (`src/lib/agent/agent.ts`, LangChain `createAgent` + Gemini, `/api/agent`, page `/assistente`). Add new tools there.
 - Deleting a category never blocks: transactions (`category_id` nullable, `on delete set null`) and recurring items become
   orphans; `orphanCounts()` drives the `OrphanAlert` banner and `/gastos?categoria=sem` lists them.
 - No authentication by design (single-user app); don't introduce it unless asked.
