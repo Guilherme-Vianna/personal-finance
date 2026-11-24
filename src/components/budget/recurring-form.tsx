@@ -273,7 +273,7 @@ function RecurringForm({
               </datalist>
             </Field>
           ) : (
-            <p className="text-xs text-muted">Sai do seu bolso todo mês, mas não conta como conta sua: vira valor a receber em Empréstimos.</p>
+            <p className="text-xs text-muted">Fica só registrado em Empréstimos: não entra nas suas contas fixas nem na sobra, porque a pessoa te paga.</p>
           )}
         </div>
       )}

@@ -57,7 +57,7 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
   const categoryOptions = categories.map(({ id, name, kind }) => ({ id, name, kind }));
   const goalOptions = goals.filter((g) => g.status === "active").map(({ id, name }) => ({ id, name }));
   const installmentsLeft = items.filter((item) => item.kind === "expense" && item.installments && !item.lentTo).reduce((total, item) => total + (remainingAmount(item, month) ?? 0), 0);
-  const totals = { income: summary.fixedIncome, expense: summary.fixedExpenses + summary.lentInstallments, investment: summary.investments };
+  const totals = { income: summary.fixedIncome, expense: summary.fixedExpenses, investment: summary.investments };
 
   return (
     <div className="flex flex-col gap-6">
@@ -131,7 +131,7 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
               <li>✏️ Um mês diferente? Use o 📆 para trocar o valor ou pular só aquele mês.</li>
               <li>📊 Tudo entra automaticamente no painel do mês. Nada precisa ser lançado à mão.</li>
               <li>🐷 Investimentos ligados a uma meta contam como depósito a cada mês que passa.</li>
-              <li>🤝 Parcela de outra pessoa no seu cartão? Marque como emprestada: sai do bolso, mas vira valor a receber.</li>
+              <li>🤝 Parcela de outra pessoa no seu cartão? Marque como emprestada: fica só registrada em Empréstimos e não entra nas suas contas nem na sobra.</li>
             </ul>
           </Card>
         </div>

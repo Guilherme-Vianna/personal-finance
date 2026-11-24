@@ -177,8 +177,6 @@ function MonthOverview({ summary }: { summary: MonthSummary }) {
     { label: "Contas fixas", value: -summary.fixedExpenses, sign: "−" },
     { label: "Investimentos", value: -summary.investments, sign: "−" },
     { label: "Gastos pessoais", value: -(summary.spent + summary.spentOutside), sign: "−" },
-    ...(summary.lent ? [{ label: "🤝 Emprestado", value: -summary.lent, sign: "−" }] : []),
-    ...(summary.repaid ? [{ label: "🤝 Recebido de volta", value: summary.repaid, sign: "+" }] : []),
   ];
   return (
     <Card>
@@ -200,6 +198,16 @@ function MonthOverview({ summary }: { summary: MonthSummary }) {
           <dt>Sobra planejada (com orçamento cheio)</dt>
           <dd className="tabular-nums">{formatMoney(summary.plannedLeftover)}</dd>
         </div>
+        {(summary.lent > 0 || summary.repaid > 0) && (
+          <p className="mt-1 rounded-lg bg-violet-50 px-2.5 py-1.5 text-xs text-violet-900">
+            🤝 {summary.lent > 0 && `${formatMoney(summary.lent)} emprestado`}
+            {summary.lent > 0 && summary.repaid > 0 && " · "}
+            {summary.repaid > 0 && `${formatMoney(summary.repaid)} recebido de volta`} neste mês. Só registro: não entra na sobra.{" "}
+            <Link href="/emprestimos" className="font-semibold underline">
+              Empréstimos
+            </Link>
+          </p>
+        )}
       </dl>
     </Card>
   );

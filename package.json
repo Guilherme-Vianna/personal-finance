@@ -17,6 +17,7 @@
     "@google/genai": "^3.6.1",
     "@neondatabase/serverless": "^1.2.0",
     "drizzle-orm": "^0.45.4",
+    "exceljs": "^4.4.0",
     "next": "16.4.6",
     "pg": "^8.23.1",
     "react": "19.3.0",
@@ -34,7 +35,6 @@
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
-    "exceljs": "^4.4.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"

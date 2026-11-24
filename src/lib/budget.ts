@@ -57,8 +57,9 @@ export function monthSummary({
   const idealSpent = (personalBudget * pacedDays) / days;
 
   const income = fixedIncome + extraIncome;
-  const plannedLeftover = income - fixedExpenses - lentInstallments - settings.personalBudget - investments;
-  const actualLeftover = income + repaid - fixedExpenses - investments - spent - spentOutside - lent;
+  // Loans are only a record: the money is expected back, so neither lending nor repayments touch the leftovers.
+  const plannedLeftover = income - fixedExpenses - settings.personalBudget - investments;
+  const actualLeftover = income - fixedExpenses - investments - spent - spentOutside;
 
   const split = [
     { key: "essentials", label: "Contas fixas", percent: settings.splitEssentials, actual: fixedExpenses },

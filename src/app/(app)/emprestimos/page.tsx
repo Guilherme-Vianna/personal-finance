@@ -114,7 +114,7 @@ async function Loans() {
         <CardTitle>Como funciona</CardTitle>
         <ul className="flex flex-col gap-2 text-sm text-muted">
           <li>🤝 Marque um gasto (ou uma conta parcelada no Orçamento) como emprestado e diga para quem.</li>
-          <li>📊 Ele continua aparecendo nos Gastos e no balanço do mês, mas não consome o seu orçamento pessoal.</li>
+          <li>📝 É só registro: nem o empréstimo nem o pagamento entram no orçamento, no balanço ou na sobra, porque você conta com o dinheiro de volta.</li>
           <li>💸 Parcelas emprestadas contam como dívida da pessoa a cada mês que caem no cartão.</li>
           <li>✅ Quando a pessoa devolver, registre o pagamento: a barra enche e o saldo diminui.</li>
         </ul>

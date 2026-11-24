@@ -11,7 +11,7 @@ const ANALISES = { href: "/analises", label: "Análises", hint: "Tendências, h�
 const GASTOS = { href: "/gastos", label: "Gastos", icon: "M4 6h16M4 12h16M4 18h10" };
 const ORCAMENTO = { href: "/orcamento", label: "Orçamento", icon: "M3 7h18v12H3zM3 7l2-3h14l2 3M16 13h2" };
 const METAS = { href: "/metas", label: "Metas", hint: "Reserva, viagens, compras grandes", icon: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-4a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0-4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" };
-const COMPROVANTE = { href: "/ler-comprovante", label: "Ler comprovante", hint: "Foto vira lançamento com IA", icon: "M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" };
+const COMPROVANTE = { href: "/importar", label: "Importar com IA", hint: "Fotos, PDFs, planilhas e extratos", icon: "M4 8h3l2-3h6l2 3h3v11H4V8Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" };
 const EMPRESTIMOS = { href: "/emprestimos", label: "Empréstimos", hint: "O que emprestou e falta receber", icon: "M7 11l3-3 4 4 3-3M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" };
 const CATEGORIAS = { href: "/categorias", label: "Categorias", hint: "As tags dos seus gastos", icon: "M7 7h.01M3 3h8l10 10-8 8L3 11V3Z" };
 

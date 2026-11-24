@@ -31,12 +31,14 @@ Sibling of personal-life-hours-tracker: same stack, UX and conventions.
 - Recurring items (`recurring`: income | expense | investment) are never materialized: `src/lib/recurring.ts` expands them per
   month between `startMonth` and `endMonth` (installments set `endMonth = start + n - 1`). `recurring_overrides` changes one
   month's amount or skips it (`amount` null). Investments linked to a goal count as deposits on each past due date.
-- Expenses (transactions or `expense` recurring items) can have `lentTo` (a person): they leave your pocket but are excluded
-  from personal spending and fixed bills; `src/lib/services/loans.ts` builds per-person balances (lent up to today − `loan_repayments`).
+- Expenses (transactions or `expense` recurring items) can have `lentTo` (a person): they are only a record (the money is expected back):
+  excluded from personal spending, fixed bills and both leftovers, and repayments don't count as income; `src/lib/services/loans.ts` builds per-person balances (lent up to today − `loan_repayments`).
 - Budget math is pure in `src/lib/budget.ts` (`monthSummary`, mirrors the spreadsheet's "Restante Total" and "Gasto Diário
   Esperado"); goal progress in `src/lib/goals.ts`; `/analises` math in `src/lib/insights.ts`.
-- AI receipt import (`src/lib/services/ai-import.ts`) uses Gemini via `@google/genai` with a JSON schema generated from Zod
-  (`z.toJSONSchema`) and validates the reply with the same schema. Nothing is saved until the user confirms the review.
+- AI import (`/importar`, `src/lib/services/ai-import.ts`) uses Gemini via `@google/genai` with a JSON schema generated from Zod
+  (`z.toJSONSchema`), validated with the same schema. Images/PDFs go as inline data; xlsx is flattened with exceljs, CSV/OFX/TXT go
+  as text (UTF-8, falling back to Windows-1252). The model leaves unsure fields null instead of guessing; likely duplicates
+  (same amount, ±2 days) come unchecked. Nothing is saved until the user reviews and bulk-saves (`/api/transactions/bulk`).
 - No authentication by design (single-user app); don't introduce it unless asked.
 - Theme is blue (navy chalkboard `board`, `brand-*` blues, yellow `pencil` accent) so it is not confused with the green sibling app.
 - Motion and mobile rules are the same as the sibling app: tokens in `src/app/globals.css`, `PageSuspense`, `stagger`,

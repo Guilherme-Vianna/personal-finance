@@ -251,7 +251,7 @@ export function TransactionForm({
               </datalist>
             </Field>
           ) : (
-            <p className="text-xs text-muted">Não conta no seu orçamento e entra em Empréstimos como valor a receber.</p>
+            <p className="text-xs text-muted">Fica só registrado em Empréstimos: não conta no orçamento nem na sobra, porque o dinheiro volta.</p>
           )}
         </div>
       )}
