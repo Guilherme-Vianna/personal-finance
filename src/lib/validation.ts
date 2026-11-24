@@ -74,6 +74,18 @@ export const repaymentInput = z.object({
   notes: optionalText(300),
 });
 
+export const paymentInput = z.object({
+  recurringId: z.uuid("Escolha o item do orçamento"),
+  date: isoDate,
+  amount,
+  description: optionalText(120),
+});
+
+export const importInput = z.object({
+  transactions: z.array(transactionInput).max(500).default([]),
+  payments: z.array(paymentInput).max(500).default([]),
+});
+
 export const goalInput = z.object({
   name: z.string().trim().min(1, "Informe o nome").max(100),
   description: optionalText(1000),

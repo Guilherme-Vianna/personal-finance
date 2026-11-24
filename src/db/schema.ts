@@ -89,6 +89,23 @@ export const recurringOverrides = pgTable(
   (table) => [unique("recurring_overrides_month_unique").on(table.recurringId, table.month)],
 );
 
+// Confirms that a planned item was actually paid (or received) in a month, usually linked from an AI import.
+export const recurringPayments = pgTable(
+  "recurring_payments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    recurringId: uuid("recurring_id")
+      .notNull()
+      .references(() => recurring.id, { onDelete: "cascade" }),
+    month: text("month").notNull(),
+    date: date("date", { mode: "string" }).notNull(),
+    amount: money("amount").notNull(),
+    description: text("description"),
+    ...timestamps,
+  },
+  (table) => [unique("recurring_payments_month_unique").on(table.recurringId, table.month)],
+);
+
 export const transactions = pgTable(
   "transactions",
   {
@@ -137,6 +154,7 @@ export type Goal = typeof goals.$inferSelect;
 export type GoalDeposit = typeof goalDeposits.$inferSelect;
 export type Recurring = typeof recurring.$inferSelect;
 export type RecurringOverride = typeof recurringOverrides.$inferSelect;
+export type RecurringPayment = typeof recurringPayments.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type LoanRepayment = typeof loanRepayments.$inferSelect;
 export type Settings = typeof settings.$inferSelect;

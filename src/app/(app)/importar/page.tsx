@@ -6,6 +6,7 @@ import { PageSuspense } from "@/components/page-suspense";
 import { todayISO } from "@/lib/dates";
 import { aiConfigured } from "@/lib/services/ai-import";
 import { listCategories } from "@/lib/services/categories";
+import { listRecurring } from "@/lib/services/recurring";
 
 export const metadata: Metadata = { title: "Importar com IA" };
 
@@ -22,6 +23,7 @@ export default function ImportPage() {
 
 async function Import() {
   await connection();
-  const categories = await listCategories();
-  return <FileImport configured={aiConfigured()} today={todayISO()} categories={categories.map(({ id, name, color, kind }) => ({ id, name, color, kind }))} />;
+  const [categories, recurring] = await Promise.all([listCategories(), listRecurring()]);
+  const planned = recurring.filter((item) => item.active).map(({ id, name, kind, amount, categoryName, dayOfMonth }) => ({ id, name, kind, amount, categoryName, dayOfMonth }));
+  return <FileImport configured={aiConfigured()} today={todayISO()} planned={planned} categories={categories.map(({ id, name, color, kind }) => ({ id, name, color, kind }))} />;
 }

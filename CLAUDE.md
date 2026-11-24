@@ -40,6 +40,9 @@ Sibling of personal-life-hours-tracker: same stack, UX and conventions.
   uncertain fields are `.optional()` (never `.nullable()`). Pasted text (e.g. Google Pay history) is sent as a text file. Images/PDFs go as inline data; xlsx is flattened with exceljs, CSV/OFX/TXT go
   as text (UTF-8, falling back to Windows-1252). The model leaves unsure fields null instead of guessing; likely duplicates
   (same amount, ±2 days) come unchecked. Nothing is saved until the user reviews and bulk-saves (`/api/transactions/bulk`).
+- AI import links entries to planned items (`planned` code from the model, falling back to an exact amount match). Linked
+  entries are saved as `recurring_payments` (one per item and month), never as transactions; a different amount upserts that
+  month's override. `checkStatus` (paid / pending / overdue / skipped) drives the Orçamento "Conferência".
 - Deleting a category never blocks: transactions (`category_id` nullable, `on delete set null`) and recurring items become
   orphans; `orphanCounts()` drives the `OrphanAlert` banner and `/gastos?categoria=sem` lists them.
 - No authentication by design (single-user app); don't introduce it unless asked.

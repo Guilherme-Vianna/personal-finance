@@ -2,6 +2,18 @@ import type { RecurringKind } from "@/db/schema";
 import { dayInMonth, eachMonth, monthOf, monthsBetween } from "./dates";
 
 export type MonthOverride = { month: string; amount: number | null; notes?: string | null };
+export type MonthPayment = { month: string; date: string; amount: number; description: string | null };
+
+export function paymentFor(item: Pick<RecurringLike, "payments">, month: string) {
+  return item.payments?.find((p) => p.month === month) ?? null;
+}
+
+// Status of a planned item in a month for the "conferência": linked payment, skipped, overdue or still pending.
+export function checkStatus(item: RecurringLike, month: string, today: string) {
+  if (paymentFor(item, month)) return "paid" as const;
+  if (overrideFor(item, month)?.amount === null) return "skipped" as const;
+  return dayInMonth(month, item.dayOfMonth) < today ? ("overdue" as const) : ("pending" as const);
+}
 
 export type RecurringLike = {
   id: string;
@@ -14,6 +26,7 @@ export type RecurringLike = {
   active: boolean;
   lentTo?: string | null;
   overrides?: MonthOverride[];
+  payments?: MonthPayment[];
 };
 
 export function overrideFor(item: Pick<RecurringLike, "overrides">, month: string) {

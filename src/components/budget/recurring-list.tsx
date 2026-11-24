@@ -5,7 +5,7 @@ import type { RecurringKind } from "@/db/schema";
 import { apiRequest } from "@/lib/api-client";
 import { formatMonth } from "@/lib/dates";
 import { formatMoney } from "@/lib/format";
-import { amountFor, installmentOf, overrideFor, recurringStatus } from "@/lib/recurring";
+import { amountFor, installmentOf, overrideFor, paymentFor, recurringStatus } from "@/lib/recurring";
 import type { RecurringRow } from "@/lib/services/recurring";
 import { ConfirmButton, dangerIconButtonClass, iconButtonClass, IconPencil, IconTrash } from "@/components/ui";
 import { useToast } from "@/components/toast";
@@ -65,6 +65,7 @@ export function RecurringList({
                   {status && <span className="ml-1.5 rounded bg-slate-100 px-1.5 align-middle text-[10px] font-bold text-slate-500 uppercase">{status}</span>}
                   {!item.categoryId && item.kind !== "investment" && <span className="ml-1.5 rounded bg-amber-100 px-1.5 align-middle text-[10px] font-bold text-amber-900">⚠️ sem categoria</span>}
                   {item.lentTo && <span className="ml-1.5 rounded bg-violet-50 px-1.5 align-middle text-[10px] font-bold text-violet-800">🤝 emprestado · {item.lentTo}</span>}
+                  {paymentFor(item, month) && <span className="ml-1.5 rounded bg-brand-100 px-1.5 align-middle text-[10px] font-bold text-brand-800">✓ {item.kind === "income" ? "recebido" : "pago"}</span>}
                   {installment && <span className="ml-1.5 rounded bg-sky-50 px-1.5 align-middle text-[10px] font-bold text-sky-800">parcela {installment}/{item.installments}</span>}
                 </p>
                 <p className="text-xs text-muted">

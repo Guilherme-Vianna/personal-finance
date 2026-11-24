@@ -8,9 +8,11 @@ import { z } from "zod";
 import { db } from "@/db";
 import { transactions } from "@/db/schema";
 import { ApiError } from "@/lib/api-errors";
-import { addDays, daysBetween } from "@/lib/dates";
-import { transactionInput } from "@/lib/validation";
+import { addDays, addMonths, daysBetween, monthOf } from "@/lib/dates";
+import { amountFor, occursIn, paymentFor } from "@/lib/recurring";
+import { importInput } from "@/lib/validation";
 import { listCategories } from "./categories";
+import { listRecurring, registerPayment, type RecurringRow } from "./recurring";
 import { descriptionSuggestions } from "./transactions";
 
 const DEFAULT_MODEL = "gemini-3.8-flash";
@@ -31,6 +33,7 @@ const extraction = z.object({
       method: z.enum(["credit", "debit", "pix", "cash", "voucher"]).optional().describe("Omit when not sure"),
       category: z.string().optional().describe("Exactly one of the given category names; omit when none fits"),
       doubt: z.string().optional().describe("Short note in Portuguese when something is unclear; omit otherwise"),
+      planned: z.string().optional().describe("Code (like P3) of the budget item this entry pays or receives; omit when it is not one of them"),
     }),
   ),
   summary: z.string().describe("One short sentence in Portuguese about what the file is"),
@@ -45,6 +48,8 @@ export type ExtractedEntry = {
   kind: "expense" | "income";
   doubt: string | null;
   duplicateOf: string | null;
+  plannedId: string | null;
+  plannedSource: "ai" | "amount" | null;
 };
 
 function extensionOf(name: string) {
@@ -116,7 +121,12 @@ export async function extractFromFile(file: File, today: string, hint: string | 
   if (!aiConfigured()) throw new ApiError(503, "A leitura por IA não está configurada: defina GEMINI_API_KEY.");
   const { part } = await filePart(file);
 
-  const [categories, suggestions] = await Promise.all([listCategories(), descriptionSuggestions()]);
+  const [categories, suggestions, recurringItems] = await Promise.all([listCategories(), descriptionSuggestions(), listRecurring()]);
+  const plannedItems = recurringItems.filter((item) => item.active);
+  const codes = new Map(plannedItems.map((item, index) => [`P${index + 1}`, item]));
+  const plannedList = [...codes]
+    .map(([code, item]) => `- [${code}] ${item.name} · ${item.kind === "income" ? "renda" : item.kind === "investment" ? "investimento" : "conta fixa"} · ${formatAmount(item.amount)} · vence dia ${item.dayOfMonth}${item.installments ? ` · ${item.installments}x` : ""}${item.categoryName ? ` · ${item.categoryName}` : ""}`)
+    .join("\n");
   const categoryList = categories.map((c) => `- ${c.name} (${c.kind === "income" ? "entrada" : "gasto"}${c.description ? `: ${c.description}` : ""})`).join("\n");
   const known = suggestions
     .slice(0, 60)
@@ -142,10 +152,14 @@ Regras:
 - Datas no formato YYYY-MM-DD. Hoje é ${today}; quando o ano não aparece, use o mais recente que não fique no futuro.
 - Forma de pagamento: credit (cartão de crédito/fatura), debit, pix, cash, voucher (VR/VA/Ticket/Alelo/Sodexo/Caju). Omita se não der pra saber.
 - Categoria: use exatamente um dos nomes da lista; omita se nenhum servir.
+- Itens planejados no orçamento: quando um lançamento for o pagamento (ou recebimento) de um deles, preencha "planned" com o código, ex.: débito "VIVO*CONTROLE 40,00" é o pagamento de "Vivo Controle"; salário recebido é a renda planejada. Só relacione quando tiver boa confiança (nome parecido e valor próximo); na dúvida, omita.
 - Descrição curta e reconhecível, reaproveitando quando fizer sentido as descrições que a pessoa já usa: ${known || "(ainda nenhuma)"}.
 
 Categorias disponíveis:
-${categoryList || "(nenhuma)"}`),
+${categoryList || "(nenhuma)"}
+
+Itens planejados no orçamento (contas fixas, rendas e investimentos):
+${plannedList || "(nenhum)"}`),
       new HumanMessage({ content: [part, { type: "text", text: hint ? `Observação da pessoa: ${hint}` : "Extraia os lançamentos deste arquivo." }] }),
     ]),
     model.withStructuredOutput(extraction, { name: "lancamentos" }),
@@ -164,10 +178,13 @@ ${categoryList || "(nenhuma)"}`),
             method: entry.kind === "expense" ? (entry.method ?? null) : null,
             doubt: entry.doubt ?? null,
             duplicateOf: null,
+            plannedId: entry.planned ? (codes.get(entry.planned.trim().toUpperCase())?.id ?? null) : null,
+            plannedSource: entry.planned && codes.has(entry.planned.trim().toUpperCase()) ? "ai" : null,
           };
         }),
     })),
-    RunnableLambda.from(async (result: { summary: string; entries: ExtractedEntry[] }) => ({ ...result, entries: await markAlreadyAdded(result.entries) })),
+    RunnableLambda.from((result: { summary: string; entries: ExtractedEntry[] }) => ({ ...result, entries: matchPlanned(result.entries, plannedItems) })),
+    RunnableLambda.from(async (result: { summary: string; entries: ExtractedEntry[] }) => ({ ...result, entries: await markAlreadyAdded(result.entries, plannedItems) })),
   ]);
 
   try {
@@ -178,9 +195,39 @@ ${categoryList || "(nenhuma)"}`),
   }
 }
 
-// Anything with the same amount within two days of an entry already registered in that interval is marked as already added.
-async function markAlreadyAdded(entries: ExtractedEntry[]) {
+function formatAmount(value: number) {
+  return `R$ ${value.toFixed(2).replace(".", ",")}`;
+}
+
+// When the model didn't link an entry, an exact amount match with a planned item due around that month is offered as a suggestion.
+function matchPlanned(entries: ExtractedEntry[], items: RecurringRow[]) {
+  const taken = new Set(entries.filter((e) => e.plannedId && e.date).map((e) => `${e.plannedId}|${monthOf(e.date!)}`));
+  return entries.map((entry) => {
+    if (entry.plannedId || entry.amount === null || !entry.date) return entry;
+    const month = monthOf(entry.date);
+    const wantedKind = entry.kind === "income" ? ["income"] : ["expense", "investment"];
+    const candidates = items.filter(
+      (item) =>
+        wantedKind.includes(item.kind) &&
+        [month, addMonths(month, -1), addMonths(month, 1)].some((m) => occursIn(item, m) && Math.abs(amountFor(item, m) - entry.amount!) < 0.01) &&
+        !taken.has(`${item.id}|${month}`),
+    );
+    if (candidates.length !== 1) return entry;
+    taken.add(`${candidates[0].id}|${month}`);
+    return { ...entry, plannedId: candidates[0].id, plannedSource: "amount" as const };
+  });
+}
+
+// Anything with the same amount within two days of an entry already registered in that interval is marked as already added,
+// and so is a link to a planned item that was already marked as paid that month.
+async function markAlreadyAdded(entries: ExtractedEntry[], items: RecurringRow[]) {
   if (!entries.length) return entries;
+  entries = entries.map((entry) => {
+    if (!entry.plannedId || !entry.date) return entry;
+    const item = items.find((i) => i.id === entry.plannedId);
+    const paid = item ? paymentFor(item, monthOf(entry.date)) : null;
+    return paid ? { ...entry, duplicateOf: `${item!.name} já marcado como pago em ${paid.date.slice(8, 10)}/${paid.date.slice(5, 7)}` } : entry;
+  });
   const dates = entries.map((e) => e.date).filter((d): d is string => d !== null).sort();
   if (!dates.length) return entries;
   const existing = await db
@@ -189,7 +236,7 @@ async function markAlreadyAdded(entries: ExtractedEntry[]) {
     .where(and(gte(transactions.date, addDays(dates[0], -2)), lte(transactions.date, addDays(dates.at(-1)!, 2))));
   const used = new Set<number>();
   return entries.map((entry) => {
-    if (entry.amount === null || entry.date === null) return entry;
+    if (entry.duplicateOf || entry.amount === null || entry.date === null) return entry;
     const { amount, date } = entry;
     const index = existing.findIndex((row, i) => !used.has(i) && Math.abs(row.amount - amount) < 0.005 && Math.abs(daysBetween(row.date, date)) <= 2);
     if (index < 0) return entry;
@@ -198,8 +245,12 @@ async function markAlreadyAdded(entries: ExtractedEntry[]) {
   });
 }
 
+// Entries linked to a planned item only mark it as paid (it is already in the budget); the rest become transactions.
 export async function createMany(body: unknown) {
-  const rows = z.array(transactionInput).min(1, "Nada para salvar").max(500).parse(body);
-  const created = await db.insert(transactions).values(rows).returning({ id: transactions.id });
-  return { created: created.length, ids: created.map((r) => r.id) };
+  const data = importInput.parse(body);
+  if (!data.transactions.length && !data.payments.length) throw new ApiError(422, "Nada para salvar");
+  const created = data.transactions.length ? await db.insert(transactions).values(data.transactions).returning({ id: transactions.id }) : [];
+  let adjusted = 0;
+  for (const payment of data.payments) if ((await registerPayment(payment)).adjusted) adjusted += 1;
+  return { created: created.length, linked: data.payments.length, adjusted };
 }

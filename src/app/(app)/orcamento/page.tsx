@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { PageHeader } from "@/components/app-shell";
+import { BudgetCheck } from "@/components/budget/budget-check";
 import { RecurringFormButton } from "@/components/budget/recurring-form";
 import { RecurringList } from "@/components/budget/recurring-list";
 import { SettingsButton } from "@/components/budget/settings-form";
@@ -77,6 +78,8 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
         <StatCard label="Contas fixas" value={formatMoney(summary.fixedExpenses, { round: true })} detail={summary.income ? `${formatPercent(summary.fixedExpenses / summary.income)} da renda` : "—"} />
         <StatCard label="Parcelas a pagar" value={formatMoney(installmentsLeft, { round: true })} detail={`a partir de ${formatMonth(month, "short")}`} />
       </div>
+
+      <BudgetCheck items={items} month={month} today={today} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-6">

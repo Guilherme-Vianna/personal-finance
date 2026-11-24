@@ -6,7 +6,8 @@ Irmão do [Horas na Vida](https://github.com/Guilherme-Vianna/personal-life-hour
 
 - **Painel**: por mês. Quanto ainda dá pra gastar, quanto por dia nos dias que faltam, ritmo ideal × real, balanço do mês (renda − contas − investimentos − gastos), o que está programado no mês, gastos por categoria, por dia, por forma de pagamento e dia da semana, onde mais foi dinheiro e metas.
 - **Gastos**: lançamentos agrupados por dia, com filtros de período, categoria, forma de pagamento e busca; criar/editar/apagar. Gastos e entradas extras.
-- **Importar com IA**: envie fotos, PDFs (fatura, extrato, nota fiscal), planilhas `.xlsx`, CSV, OFX ou TXT, vários de uma vez, ou cole um texto (ex.: histórico do Google Pay). O Gemini pré-preenche os lançamentos (data, valor, forma de pagamento e categoria); o que ele não tem certeza fica em branco para você completar, e o que já está lançado no mesmo período (mesmo valor, até 2 dias) ou repetido entre os arquivos vem como "✓ Já adicionado" e desmarcado. Você ajusta (com ações em lote) e salva tudo de uma vez.
+- **Importar com IA**: envie fotos, PDFs (fatura, extrato, nota fiscal), planilhas `.xlsx`, CSV, OFX ou TXT, vários de uma vez, ou cole um texto (ex.: histórico do Google Pay). O Gemini pré-preenche os lançamentos (data, valor, forma de pagamento e categoria); o que ele não tem certeza fica em branco para você completar, e o que já está lançado no mesmo período (mesmo valor, até 2 dias) ou repetido entre os arquivos vem como "✓ Já adicionado" e desmarcado. Lançamentos que são contas, rendas ou investimentos do Orçamento vêm com a relação sugerida (🔗) para você confirmar; ao salvar, o item fica ✓ pago no mês (com o valor real, se diferente) em vez de virar gasto duplicado. Você ajusta (com ações em lote) e salva tudo de uma vez.
+- **Conferência do mês** (no Orçamento): cada item programado aparece como ✓ relacionado (com data, valor e origem), ⏳ pendente, ⚠️ atrasado ou ⏭️ pulado.
 - **Orçamento**: rendas, contas fixas e investimentos programados com início e fim (ou sem fim, ou parcelados). Qualquer mês pode ter um ajuste (outro valor ou "pular este mês"). Orçamento pessoal mensal e divisão ideal da renda (padrão 50/20/30).
 - **Metas**: valor-alvo e prazo opcional; depósitos manuais e investimentos programados ligados à meta enchem a barra. Mostra média mensal, previsão e quanto guardar por mês para bater o prazo.
 - **Análises**: janelas de 3, 6 ou 12 meses; gastos por mês contra o orçamento, tendência por categoria, maiores gastos, formas de pagamento, dias da semana e insights automáticos.
@@ -51,11 +52,12 @@ Importa a aba **Orcamento** (contas fixas, rendas, investimento, orçamento pess
 | --- | --- | --- |
 | GET / POST | `/api/transactions` | Lista (`from`, `to`, `categoryId`, `method`, `q`, `limit`) / cria lançamento |
 | PUT / DELETE | `/api/transactions/:id` | Atualiza / apaga |
-| POST | `/api/transactions/bulk` | Cria vários (usado pela leitura de comprovante) |
+| POST | `/api/transactions/bulk` | Salva a importação: `{transactions, payments}` |
 | GET / POST | `/api/categories` | Lista com totais / cria |
 | PUT / DELETE | `/api/categories/:id` | Atualiza / apaga (itens que usavam ficam órfãos; retorna quantos) |
 | GET / POST | `/api/recurring` | Rendas, contas fixas e investimentos programados / cria |
 | PUT / DELETE | `/api/recurring/:id` | Atualiza / apaga |
+| POST / DELETE | `/api/recurring/:id/payments` | Marca como pago/recebido no mês (`{date, amount}`; valor diferente vira ajuste) / desfaz (`?month=`) |
 | PUT / DELETE | `/api/recurring/:id/overrides` | Ajusta um mês (`{month, amount}` ou `{month, skip: true}`) / remove ajuste (`?month=`) |
 | GET / POST | `/api/goals` | Metas com progresso / cria |
 | PUT / DELETE | `/api/goals/:id` | Atualiza / apaga |

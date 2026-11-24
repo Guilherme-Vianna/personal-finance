@@ -234,7 +234,8 @@ function BillsCard({ stats, month, today }: { stats: DashboardStats; month: stri
       ) : (
         <ul className="-my-1 flex max-h-80 flex-col divide-y divide-border overflow-y-auto">
           {rows.map((bill) => {
-            const done = bill.date <= today;
+            const paid = bill.payments.find((p) => p.month === month);
+            const done = Boolean(paid);
             const skipped = bill.override?.amount === null;
             return (
               <li key={bill.id} className={`flex items-center gap-3 py-2 ${skipped ? "opacity-50" : ""}`}>
@@ -249,6 +250,7 @@ function BillsCard({ stats, month, today }: { stats: DashboardStats; month: stri
                     {bill.installment && ` · parcela ${bill.installment}/${bill.installments}`}
                     {bill.lentTo && ` · 🤝 ${bill.lentTo}`}
                     {bill.override && (skipped ? " · pulado" : " · valor ajustado")}
+                    {paid ? ` · ✓ ${bill.kind === "income" ? "recebido" : "pago"} ${paid.date.slice(8, 10)}/${paid.date.slice(5, 7)}` : !skipped && bill.date < today ? " · ⚠️ sem pagamento relacionado" : ""}
                   </p>
                 </div>
                 <OverrideButton item={bill} month={month} className="rounded-lg px-1.5 py-1 text-right hover:bg-brand-50">

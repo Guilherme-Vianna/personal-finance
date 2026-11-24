@@ -11,7 +11,19 @@ import { Button, Card, CardTitle, Field, inputClass } from "@/components/ui";
 import { useToast } from "@/components/toast";
 
 type CategoryOption = { id: string; name: string; color: string; kind: CategoryKind };
-type Extracted = { date: string | null; description: string; amount: number | null; categoryId: string | null; method: PaymentMethod | null; kind: CategoryKind; doubt: string | null; duplicateOf: string | null };
+type PlannedOption = { id: string; name: string; kind: "income" | "expense" | "investment"; amount: number; categoryName: string | null; dayOfMonth: number };
+type Extracted = {
+  date: string | null;
+  description: string;
+  amount: number | null;
+  categoryId: string | null;
+  method: PaymentMethod | null;
+  kind: CategoryKind;
+  doubt: string | null;
+  duplicateOf: string | null;
+  plannedId: string | null;
+  plannedSource: "ai" | "amount" | null;
+};
 type Row = {
   key: number;
   include: boolean;
@@ -24,6 +36,9 @@ type Row = {
   doubt: string | null;
   duplicateOf: string | null;
   source: string;
+  plannedId: string;
+  plannedSource: "ai" | "amount" | null;
+  plannedConfirmed: boolean;
 };
 type FileState = { id: number; file: File; status: "pending" | "reading" | "done" | "error"; message?: string };
 
@@ -57,16 +72,19 @@ function fileIcon(file: File) {
 
 function missingFields(row: Row) {
   const missing: string[] = [];
-  if (!row.description.trim()) missing.push("descrição");
+  if (!row.description.trim() && !row.plannedId) missing.push("descrição");
   if (!(parseMoney(row.amount) > 0)) missing.push("valor");
   if (!row.date) missing.push("data");
-  if (!row.categoryId) missing.push("categoria");
+  if (!row.categoryId && !row.plannedId) missing.push("categoria");
+  if (row.plannedId && !row.plannedConfirmed) missing.push("confirmar relação com o orçamento");
   return missing;
 }
 
+const KIND_LABELS = { income: "Rendas", expense: "Contas fixas", investment: "Investimentos" } as const;
+
 const missingClass = "border-amber-400 bg-amber-50/60";
 
-export function FileImport({ categories, configured, today }: { categories: CategoryOption[]; configured: boolean; today: string }) {
+export function FileImport({ categories, planned, configured, today }: { categories: CategoryOption[]; planned: PlannedOption[]; configured: boolean; today: string }) {
   const id = useId();
   const router = useRouter();
   const toast = useToast();
@@ -125,6 +143,9 @@ export function FileImport({ categories, configured, today }: { categories: Cate
           doubt: entry.doubt,
           duplicateOf: entry.duplicateOf,
           source: item.file.name,
+          plannedId: entry.plannedId ?? "",
+          plannedSource: entry.plannedSource,
+          plannedConfirmed: false,
         }));
         // A receipt and the bank statement for the same purchase often arrive in the same batch.
         setRows((current) => [
@@ -150,7 +171,7 @@ export function FileImport({ categories, configured, today }: { categories: Cate
   }
 
   function addRow() {
-    setRows((current) => [...current, { key: nextKey++, include: true, date: today, description: "", amount: "", categoryId: "", method: "", kind: "expense", doubt: null, duplicateOf: null, source: "manual" }]);
+    setRows((current) => [...current, { key: nextKey++, include: true, date: today, description: "", amount: "", categoryId: "", method: "", kind: "expense", doubt: null, duplicateOf: null, source: "manual", plannedId: "", plannedSource: null, plannedConfirmed: true }]);
   }
 
   function applyBulk(field: "categoryId" | "method" | "date") {
@@ -176,17 +197,27 @@ export function FileImport({ categories, configured, today }: { categories: Cate
     setSaving(true);
     setError(null);
     try {
-      const body = chosen.map((row) => ({
-        date: row.date,
-        description: row.description.trim(),
-        amount: parseMoney(row.amount),
-        categoryId: row.categoryId,
-        method: row.kind === "expense" ? row.method || null : null,
-        notes: row.source === "manual" ? null : `Importado com IA · ${row.source}`,
-      }));
-      const result = await apiRequest<{ created: number }>("/api/transactions/bulk", { method: "POST", body });
-      toast(`${result.created} lançamento(s) salvos`);
-      setSaved(result.created);
+      const body = {
+        transactions: chosen
+          .filter((row) => !row.plannedId)
+          .map((row) => ({
+            date: row.date,
+            description: row.description.trim(),
+            amount: parseMoney(row.amount),
+            categoryId: row.categoryId,
+            method: row.kind === "expense" ? row.method || null : null,
+            notes: row.source === "manual" ? null : `Importado com IA · ${row.source}`,
+          })),
+        payments: chosen
+          .filter((row) => row.plannedId)
+          .map((row) => ({ recurringId: row.plannedId, date: row.date, amount: parseMoney(row.amount), description: `${row.description.trim() || "Pagamento"} · ${row.source}` })),
+      };
+      const result = await apiRequest<{ created: number; linked: number; adjusted: number }>("/api/transactions/bulk", { method: "POST", body });
+      toast(
+        [result.created ? `${result.created} lançamento(s) salvos` : null, result.linked ? `${result.linked} item(ns) do orçamento marcados como pagos` : null].filter(Boolean).join(" · ") +
+          (result.adjusted ? ` · ${result.adjusted} com valor ajustado` : ""),
+      );
+      setSaved(result.created + result.linked);
       setRows([]);
       setFiles([]);
       setSummaries([]);
@@ -316,6 +347,7 @@ export function FileImport({ categories, configured, today }: { categories: Cate
               <li>✨ A IA pré-preenche cada lançamento: data, valor, forma de pagamento e categoria (das suas).</li>
               <li>🤔 Quando fica em dúvida, ela deixa o campo em branco (em amarelo) para você completar.</li>
               <li>✓ O que já está lançado no mesmo período (mesmo valor, até 2 dias de diferença), ou repetido entre os arquivos, vem marcado como &quot;Já adicionado&quot; e desmarcado.</li>
+              <li>🔗 Se for uma conta, renda ou investimento do Orçamento, a IA sugere a relação; você confirma e, ao salvar, o item fica ✓ pago no mês (sem virar gasto duplicado).</li>
               <li>✅ Nada é salvo sozinho: você revisa, ajusta e salva tudo de uma vez.</li>
             </ul>
           </Card>
@@ -403,7 +435,7 @@ export function FileImport({ categories, configured, today }: { categories: Cate
                         <input aria-label="Descrição" placeholder="Descrição" className={`${inputClass} col-span-2 font-semibold sm:col-span-1 ${flag("descrição")}`} value={row.description} onChange={(e) => update(row.key, { description: e.target.value })} />
                         <input aria-label="Valor" placeholder="Valor" inputMode="decimal" className={`${inputClass} tabular-nums ${flag("valor")}`} value={row.amount} onChange={(e) => update(row.key, { amount: e.target.value })} />
                         <input aria-label="Data" type="date" className={`${inputClass} ${flag("data")}`} value={row.date} onChange={(e) => update(row.key, { date: e.target.value })} />
-                        <select aria-label="Categoria" className={`${inputClass} ${flag("categoria")}`} value={row.categoryId} onChange={(e) => update(row.key, { categoryId: e.target.value })}>
+                        <select aria-label="Categoria" disabled={Boolean(row.plannedId)} title={row.plannedId ? "Usa a categoria do item do orçamento" : undefined} className={`${inputClass} disabled:opacity-50 ${flag("categoria")}`} value={row.categoryId} onChange={(e) => update(row.key, { categoryId: e.target.value })}>
                           <option value="">Categoria…</option>
                           {options.map((c) => (
                             <option key={c.id} value={c.id}>
@@ -439,6 +471,7 @@ export function FileImport({ categories, configured, today }: { categories: Cate
                         </div>
                       </div>
                     </div>
+                    <PlannedLink row={row} planned={planned} onChange={(changes) => update(row.key, changes)} />
                     <div className="mt-2 ml-4.5 flex flex-col gap-0.5 text-xs">
                       {row.duplicateOf && (
                         <p className="font-semibold text-sky-800">
@@ -471,6 +504,55 @@ export function FileImport({ categories, configured, today }: { categories: Cate
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function PlannedLink({ row, planned, onChange }: { row: Row; planned: PlannedOption[]; onChange: (changes: Partial<Row>) => void }) {
+  const options = planned.filter((p) => (row.kind === "income" ? p.kind === "income" : p.kind !== "income"));
+  const current = planned.find((p) => p.id === row.plannedId);
+  const pending = Boolean(row.plannedId) && !row.plannedConfirmed;
+  const amount = parseMoney(row.amount);
+  return (
+    <div className={`mt-2 ml-4.5 flex flex-col gap-1.5 rounded-xl border px-2.5 py-2 sm:flex-row sm:items-center ${pending ? "border-violet-300 bg-violet-50" : row.plannedId ? "border-brand-200 bg-brand-50/60" : "border-dashed border-border"}`}>
+      <span className="shrink-0 text-xs font-semibold text-muted">🔗 Orçamento:</span>
+      <select
+        aria-label="Relacionar com item do orçamento"
+        className={`${inputClass} sm:min-h-0 sm:py-1.5`}
+        value={row.plannedId}
+        onChange={(e) => onChange({ plannedId: e.target.value, plannedConfirmed: true, plannedSource: null })}
+      >
+        <option value="">Não é do orçamento (gasto novo)</option>
+        {(["expense", "investment", "income"] as const).map((kind) => {
+          const group = options.filter((p) => p.kind === kind);
+          return group.length ? (
+            <optgroup key={kind} label={KIND_LABELS[kind]}>
+              {group.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} · {formatMoney(p.amount)} · dia {p.dayOfMonth}
+                </option>
+              ))}
+            </optgroup>
+          ) : null;
+        })}
+      </select>
+      {pending && (
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-xs font-semibold text-violet-800">{row.plannedSource === "amount" ? "Sugestão pelo valor" : "Sugestão da IA"}</span>
+          <Button size="sm" onClick={() => onChange({ plannedConfirmed: true })}>
+            ✓ Confirmar
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => onChange({ plannedId: "", plannedConfirmed: true, plannedSource: null })}>
+            Não é
+          </Button>
+        </div>
+      )}
+      {current && !pending && (
+        <span className="text-xs text-brand-800">
+          ✓ Vai marcar como pago no mês
+          {amount > 0 && Math.abs(amount - current.amount) >= 0.01 && ` · valor real ${formatMoney(amount)} (planejado ${formatMoney(current.amount)})`}
+        </span>
+      )}
     </div>
   );
 }
