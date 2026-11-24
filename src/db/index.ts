@@ -22,4 +22,11 @@ function getDb() {
   return cache.dbCache.db;
 }
 
-export const db = getDb();
+// Connecting lazily keeps `next build` from needing DATABASE_URL while it collects route configuration.
+export const db = new Proxy({} as Database, {
+  get(_target, prop) {
+    const real = getDb();
+    const value = Reflect.get(real, prop, real);
+    return typeof value === "function" ? value.bind(real) : value;
+  },
+});
