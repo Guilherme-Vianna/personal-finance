@@ -130,7 +130,7 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
               ))}
             </ul>
           </Card>
-          <Card className="notebook">
+          <Card>
             <CardTitle>Como funciona</CardTitle>
             <ul className="flex flex-col gap-2 text-sm text-muted">
               <li>📅 Cada item vale do mês de início até o fim (ou para sempre). Parcelados terminam sozinhos.</li>

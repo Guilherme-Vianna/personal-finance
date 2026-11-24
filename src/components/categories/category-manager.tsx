@@ -27,8 +27,8 @@ export function CategoryManager({ categories }: { categories: CategoryWithStats[
       ) : (
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {categories.map((category) => (
-            <li key={category.id} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 sm:gap-4 sm:p-4">
-              <span className="flex size-10 shrink-0 sm:size-11 items-center justify-center rounded-xl text-lg font-extrabold text-white" style={{ background: category.color }}>
+            <li key={category.id} className="flex items-center gap-3 rounded-lg border border-border bg-surface p-3 sm:gap-4 sm:p-4">
+              <span className="flex size-10 shrink-0 sm:size-11 items-center justify-center rounded-md text-lg font-semibold text-white" style={{ background: category.color }}>
                 {category.name.charAt(0).toUpperCase()}
               </span>
               <div className="min-w-0 flex-1">
@@ -131,7 +131,7 @@ function CategoryForm({ initial, onDone, onCancel }: { initial: Draft; onDone: (
               role="radio"
               aria-checked={kind === option}
               onClick={() => setKind(option)}
-              className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold transition sm:min-h-0 ${kind === option ? "border-transparent bg-brand-600 text-white shadow-sm" : "border-border bg-surface text-ink hover:border-brand-300"}`}
+              className={`min-h-11 rounded-md border px-3 py-2 text-sm font-semibold transition sm:min-h-0 ${kind === option ? "border-transparent bg-brand-600 text-white shadow-sm" : "border-border bg-surface text-ink hover:border-brand-300"}`}
             >
               {option === "expense" ? "💸 Gasto" : "💰 Entrada"}
             </button>
@@ -146,7 +146,7 @@ function CategoryForm({ initial, onDone, onCancel }: { initial: Draft; onDone: (
             : "Ex.: 13º, bônus que vai direto pra reserva. Sem isso marcado, entradas extras aumentam o orçamento do mês."}
         </p>
       </div>
-      {errors._ && !errors.name && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
+      {errors._ && !errors.name && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
       <FormActions>
         <Button variant="secondary" onClick={onCancel}>
           Cancelar

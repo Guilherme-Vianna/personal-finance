@@ -16,7 +16,7 @@ export function GoalCard({ goal, today, compact = false }: { goal: GoalWithProgr
   const { progress } = goal;
   const short = (iso: string) => formatDate(iso, { month: "short", year: "2-digit" });
   return (
-    <article className={`lift relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-surface p-4 pt-5 shadow-card sm:p-5 sm:pt-6 ${goal.status === "completed" ? "opacity-80" : ""}`}>
+    <article className={`lift relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-lg border border-border bg-surface p-4 pt-5 shadow-card sm:p-5 sm:pt-6 ${goal.status === "completed" ? "opacity-80" : ""}`}>
       <span className="absolute inset-x-0 top-0 h-1" style={{ background: goal.color }} aria-hidden />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -34,7 +34,7 @@ export function GoalCard({ goal, today, compact = false }: { goal: GoalWithProgr
 
       <div>
         <div className="mb-1.5 flex items-baseline justify-between gap-2">
-          <span className="font-hand text-3xl leading-none font-bold text-brand-800">
+          <span className="text-2xl leading-none font-semibold tracking-tight tabular-nums text-brand-800">
             <CountUp value={progress.percent} suffix="%" />
           </span>
           <span className="text-sm text-muted tabular-nums">
@@ -54,15 +54,15 @@ export function GoalCard({ goal, today, compact = false }: { goal: GoalWithProgr
 
       {!compact && (
         <dl className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl bg-brand-50 px-2 py-2">
+          <div className="rounded-md bg-brand-50 px-2 py-2">
             <dt className="text-[10px] font-bold text-muted uppercase">Este mês</dt>
             <dd className="text-sm font-bold tabular-nums">{formatMoney(progress.thisMonth, { round: true })}</dd>
           </div>
-          <div className="rounded-xl bg-brand-50 px-2 py-2">
+          <div className="rounded-md bg-brand-50 px-2 py-2">
             <dt className="text-[10px] font-bold text-muted uppercase">Média/mês</dt>
             <dd className="text-sm font-bold tabular-nums">{formatMoney(progress.monthlyAverage, { round: true })}</dd>
           </div>
-          <div className="rounded-xl bg-brand-50 px-2 py-2">
+          <div className="rounded-md bg-brand-50 px-2 py-2">
             <dt className="text-[10px] font-bold text-muted uppercase">Último</dt>
             <dd className="text-sm font-bold">{progress.lastDepositDate ? (progress.lastDepositDate === today ? "Hoje" : formatDate(progress.lastDepositDate)) : "—"}</dd>
           </div>
@@ -70,7 +70,7 @@ export function GoalCard({ goal, today, compact = false }: { goal: GoalWithProgr
       )}
 
       {!compact && goal.linkedRecurring.length > 0 && (
-        <p className="rounded-xl border border-dashed border-brand-200 bg-brand-50/50 px-3 py-2 text-xs text-brand-800">
+        <p className="rounded-md border border-dashed border-brand-200 bg-brand-50/50 px-3 py-2 text-xs text-brand-800">
           🔁 Entra sozinho todo mês: {goal.linkedRecurring.map((item) => `${item.name} (${formatMoney(item.amount, { round: true })})`).join(", ")}
         </p>
       )}

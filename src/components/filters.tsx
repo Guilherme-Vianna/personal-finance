@@ -22,7 +22,7 @@ export function useQueryUpdater() {
 
 export function Segmented<T extends string>({ options, value, onChange, label }: { options: { value: T; label: string }[]; value: T; onChange: (value: T) => void; label: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="grid w-full auto-cols-fr grid-flow-col gap-1 rounded-xl border border-border bg-surface p-1 sm:inline-flex sm:w-auto sm:flex-wrap">
+    <div role="radiogroup" aria-label={label} className="grid w-full auto-cols-fr grid-flow-col gap-1 rounded-md border border-border bg-surface p-1 sm:inline-flex sm:w-auto sm:flex-wrap">
       {options.map((option) => (
         <button
           key={option.value}

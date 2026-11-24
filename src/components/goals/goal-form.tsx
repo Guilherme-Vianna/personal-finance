@@ -87,7 +87,7 @@ function GoalForm({ initial, onDone }: { initial?: GoalDraft; onDone: () => void
         <ColorPicker value={color} onChange={setColor} colors={CATEGORY_COLORS} />
       </Field>
       {initial && <Toggle checked={completed} onChange={setCompleted} label="Meta concluída" />}
-      {errors._ && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
+      {errors._ && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
       <FormActions>
         <Button variant="secondary" onClick={onDone}>
           Cancelar

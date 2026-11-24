@@ -76,7 +76,7 @@ function SettingsForm({ settings, onDone }: { settings: Settings; onDone: () => 
         </div>
         <p className={`mt-1 text-xs ${total === 100 ? "text-muted" : "font-semibold text-danger"}`}>Total: {total}%</p>
       </div>
-      {errors._ && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
+      {errors._ && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
       <FormActions>
         <Button variant="secondary" onClick={onDone}>
           Cancelar

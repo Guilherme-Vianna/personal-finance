@@ -125,7 +125,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searc
             title="Nenhuma meta ainda"
             description="Crie uma meta (reserva de emergência, viagem, notebook…) e acompanhe com uma barra de progresso."
             action={
-              <Link href="/metas" className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
+              <Link href="/metas" className="rounded-md bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
                 Criar meta
               </Link>
             }
@@ -150,7 +150,7 @@ function BudgetCard({ summary, isCurrent, isPast, month }: { summary: MonthSumma
     <Card>
       <CardTitle>Orçamento pessoal</CardTitle>
       <div className="mb-1.5 flex items-baseline justify-between gap-2">
-        <span className={`font-hand text-3xl leading-none font-bold ${over ? "text-danger" : "text-brand-800"}`}>{formatPercent(summary.usedPercent / 100)}</span>
+        <span className={`text-2xl leading-none font-semibold tracking-tight tabular-nums ${over ? "text-danger" : "text-brand-800"}`}>{formatPercent(summary.usedPercent / 100)}</span>
         <span className="text-sm text-muted tabular-nums">
           <strong className="text-ink">{formatMoney(summary.spent)}</strong> de {formatMoney(summary.personalBudget)}
         </span>
@@ -195,7 +195,7 @@ function MonthOverview({ summary }: { summary: MonthSummary }) {
         ))}
         <div className="mt-1 flex justify-between gap-3 border-t border-dashed border-border pt-2">
           <dt className="font-bold">Sobra real</dt>
-          <dd className={`text-lg font-extrabold tabular-nums ${summary.actualLeftover < 0 ? "text-danger" : "text-brand-700"}`}>{formatMoney(summary.actualLeftover)}</dd>
+          <dd className={`text-lg font-semibold tabular-nums ${summary.actualLeftover < 0 ? "text-danger" : "text-brand-700"}`}>{formatMoney(summary.actualLeftover)}</dd>
         </div>
         <div className="flex justify-between gap-3 text-xs text-muted">
           <dt>Sobra planejada (com orçamento cheio)</dt>
@@ -250,7 +250,7 @@ function BillsCard({ stats, month, today }: { stats: DashboardStats; month: stri
                     {bill.installment && ` · parcela ${bill.installment}/${bill.installments}`}
                     {bill.lentTo && ` · 🤝 ${bill.lentTo}`}
                     {bill.override && (skipped ? " · pulado" : " · valor ajustado")}
-                    {paid ? ` · ✓ ${bill.kind === "income" ? "recebido" : "pago"} ${paid.date.slice(8, 10)}/${paid.date.slice(5, 7)}` : !skipped && bill.date < today ? " · ⚠️ sem pagamento relacionado" : ""}
+                    {paid ? ` · ✓ ${bill.kind === "income" ? "recebido" : "pago"} ${paid.date.slice(8, 10)}/${paid.date.slice(5, 7)}` : !skipped && bill.date < today ? " · atrasado" : ""}
                   </p>
                 </div>
                 <OverrideButton item={bill} month={month} className="rounded-lg px-1.5 py-1 text-right hover:bg-brand-50">

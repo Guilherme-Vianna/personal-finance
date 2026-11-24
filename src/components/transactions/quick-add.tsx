@@ -49,7 +49,7 @@ export function useTransactionModal() {
       ) : (
         <div className="flex flex-col gap-3" aria-busy>
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-11 animate-pulse rounded-xl bg-brand-50" />
+            <div key={i} className="h-11 animate-pulse rounded-md bg-brand-50" />
           ))}
         </div>
       )}

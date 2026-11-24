@@ -64,7 +64,7 @@ export function AssistantChat({ configured }: { configured: boolean }) {
 
   if (!configured) {
     return (
-      <Card className="notebook">
+      <Card>
         <p className="text-sm text-muted">
           Defina <code className="rounded bg-brand-50 px-1 font-semibold text-brand-800">GEMINI_API_KEY</code> para usar o assistente.
         </p>
@@ -75,8 +75,8 @@ export function AssistantChat({ configured }: { configured: boolean }) {
   return (
     <div className="flex min-h-[60dvh] flex-col gap-4">
       {turns.length === 0 ? (
-        <Card className="notebook">
-          <p className="font-hand text-3xl font-bold text-brand-800">O que você quer saber?</p>
+        <Card>
+          <p className="text-xl font-semibold tracking-tight text-brand-800">O que você quer saber?</p>
           <p className="mt-1 text-sm text-muted">O assistente consulta seus gastos, orçamento, metas e empréstimos para responder com números reais.</p>
           <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {SUGGESTIONS.map((suggestion) => (
@@ -84,7 +84,7 @@ export function AssistantChat({ configured }: { configured: boolean }) {
                 key={suggestion}
                 type="button"
                 onClick={() => send(suggestion)}
-                className="lift min-h-11 rounded-xl border border-border bg-surface px-3 py-2 text-left text-sm font-semibold text-ink hover:border-brand-300"
+                className="lift min-h-11 rounded-md border border-border bg-surface px-3 py-2 text-left text-sm font-semibold text-ink hover:border-brand-300"
               >
                 {suggestion}
               </button>
@@ -95,11 +95,11 @@ export function AssistantChat({ configured }: { configured: boolean }) {
         <div className="flex flex-col gap-4">
           {turns.map((turn, index) =>
             turn.role === "user" ? (
-              <div key={index} className="ml-auto max-w-[85%] rounded-2xl rounded-br-md bg-brand-600 px-4 py-2.5 text-sm text-white shadow-sm">
+              <div key={index} className="ml-auto max-w-[85%] rounded-lg rounded-br-md bg-brand-600 px-4 py-2.5 text-sm text-white shadow-sm">
                 {turn.content}
               </div>
             ) : (
-              <div key={index} className={`max-w-full rounded-2xl rounded-bl-md border px-4 py-3 shadow-card sm:max-w-[92%] ${turn.error ? "border-danger/30 bg-danger-soft text-danger" : "border-border bg-surface"}`}>
+              <div key={index} className={`max-w-full rounded-lg rounded-bl-md border px-4 py-3 shadow-card sm:max-w-[92%] ${turn.error ? "border-danger/30 bg-danger-soft text-danger" : "border-border bg-surface"}`}>
                 {turn.tools && turn.tools.length > 0 && (
                   <p className="mb-2 flex flex-wrap gap-1 text-[11px] text-muted">
                     <span className="font-semibold">Consultou:</span>
@@ -117,7 +117,7 @@ export function AssistantChat({ configured }: { configured: boolean }) {
             ),
           )}
           {busy && (
-            <div className="flex w-fit items-center gap-2 rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3 text-sm text-muted shadow-card" aria-live="polite">
+            <div className="flex w-fit items-center gap-2 rounded-lg rounded-bl-md border border-border bg-surface px-4 py-3 text-sm text-muted shadow-card" aria-live="polite">
               <span className="flex gap-1" aria-hidden>
                 {[0, 1, 2].map((i) => (
                   <span key={i} className="size-1.5 animate-bounce rounded-full bg-brand-500" style={{ animationDelay: `${i * 120}ms` }} />
@@ -130,7 +130,7 @@ export function AssistantChat({ configured }: { configured: boolean }) {
         </div>
       )}
 
-      <form onSubmit={submit} className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] mt-auto flex items-end gap-2 rounded-2xl border border-border bg-surface/95 p-2 shadow-lift backdrop-blur lg:bottom-4">
+      <form onSubmit={submit} className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] mt-auto flex items-end gap-2 rounded-lg border border-border bg-surface/95 p-2 shadow-lift backdrop-blur lg:bottom-4">
         <textarea
           ref={inputRef}
           rows={1}

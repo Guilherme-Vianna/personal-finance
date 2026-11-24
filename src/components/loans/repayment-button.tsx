@@ -83,7 +83,7 @@ function RepaymentForm({ person: initialPerson, balance, people, onDone }: { per
       <Field label="Observação (opcional)" htmlFor={`${id}-notes`}>
         <input id={`${id}-notes`} className={inputClass} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex.: Pix, parcela de março" />
       </Field>
-      {errors._ && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
+      {errors._ && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
       <FormActions>
         <Button variant="secondary" onClick={onDone}>
           Cancelar

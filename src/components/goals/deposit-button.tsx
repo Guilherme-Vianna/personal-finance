@@ -71,7 +71,7 @@ function DepositForm({ goalId, onDone }: { goalId: string; onDone: () => void })
       <Field label="Observação (opcional)" htmlFor={`${id}-notes`}>
         <input id={`${id}-notes`} className={inputClass} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
-      {errors._ && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
+      {errors._ && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
       <FormActions>
         <Button variant="secondary" onClick={onDone}>
           Cancelar

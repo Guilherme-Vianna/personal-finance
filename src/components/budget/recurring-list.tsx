@@ -46,7 +46,7 @@ export function RecurringList({
   const router = useRouter();
   const toast = useToast();
   const own = items.filter((item) => item.kind === kind).sort((a, b) => amountFor(b, month) - amountFor(a, month) || b.amount - a.amount);
-  if (!own.length) return <p className="rounded-2xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">Nada programado ainda.</p>;
+  if (!own.length) return <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted">Nada programado ainda.</p>;
   return (
     <ul className="flex flex-col gap-2">
       {own.map((item) => {
@@ -56,7 +56,7 @@ export function RecurringList({
         const thisMonth = amountFor(item, month);
         const otherOverrides = item.overrides.filter((o) => o.month !== month && o.month >= month);
         return (
-          <li key={item.id} className={`flex gap-3 rounded-2xl border border-border bg-surface p-3 sm:items-center sm:p-4 ${status ? "opacity-60" : ""}`}>
+          <li key={item.id} className={`flex gap-3 rounded-lg border border-border bg-surface p-3 sm:items-center sm:p-4 ${status ? "opacity-60" : ""}`}>
             <span className="w-1.5 shrink-0 self-stretch rounded-full sm:h-10 sm:self-center" style={{ background: item.goalColor ?? item.categoryColor ?? "var(--color-brand-400)" }} />
             <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
               <div className="min-w-0 flex-1">
@@ -83,7 +83,7 @@ export function RecurringList({
               </div>
               <div className="flex items-center justify-between gap-3 sm:shrink-0">
                 <div className="flex items-baseline gap-1.5 sm:block sm:text-right">
-                  <p className={`text-lg font-extrabold tabular-nums ${override ? "text-amber-700" : ""}`}>{formatMoney(status ? item.amount : thisMonth)}</p>
+                  <p className={`text-lg font-semibold tabular-nums ${override ? "text-amber-700" : ""}`}>{formatMoney(status ? item.amount : thisMonth)}</p>
                   <p className="text-xs text-muted">{override ? (override.amount === null ? "pulado este mês" : `normal ${formatMoney(item.amount)}`) : "por mês"}</p>
                 </div>
                 <div className="-mr-2 flex gap-0.5 sm:mr-0">

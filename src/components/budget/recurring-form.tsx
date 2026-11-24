@@ -165,7 +165,7 @@ function RecurringForm({
               setKind(option);
               if (categories.find((c) => c.id === categoryId)?.kind !== (option === "income" ? "income" : "expense")) setCategoryId("");
             }}
-            className={`min-h-11 rounded-xl border px-2 py-2 text-sm font-semibold transition sm:min-h-0 ${kind === option ? "border-transparent bg-brand-600 text-white shadow-sm" : "border-border bg-surface text-ink hover:border-brand-300"}`}
+            className={`min-h-11 rounded-md border px-2 py-2 text-sm font-semibold transition sm:min-h-0 ${kind === option ? "border-transparent bg-brand-600 text-white shadow-sm" : "border-border bg-surface text-ink hover:border-brand-300"}`}
           >
             {RECURRING_KIND_LABELS[option].icon} {RECURRING_KIND_LABELS[option].label}
           </button>
@@ -261,7 +261,7 @@ function RecurringForm({
       )}
 
       {kind === "expense" && (
-        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border p-3">
+        <div className="flex flex-col gap-2 rounded-md border border-dashed border-border p-3">
           <Toggle checked={lent} onChange={setLent} label="🤝 Emprestado (parcela de outra pessoa no seu cartão)" />
           {lent ? (
             <Field label="Para quem?" htmlFor={`${id}-lent`} error={errors.lentTo}>
@@ -282,7 +282,7 @@ function RecurringForm({
         <input id={`${id}-notes`} className={inputClass} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
       <Toggle checked={active} onChange={setActive} label="Ativo (conta no orçamento)" />
-      {errors._ && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
+      {errors._ && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
       <FormActions>
         <Button variant="secondary" onClick={onDone}>
           Cancelar

@@ -2,7 +2,7 @@
 
 Controle de dinheiro pessoal (baseado na planilha "Livro Folha"): quanto ainda dá pra gastar no mês, contas fixas e parcelas programadas, metas com barra de progresso e leitura de comprovantes por IA.
 
-Irmão do [Horas na Vida](https://github.com/Guilherme-Vianna/personal-life-hours-tracker): mesma stack, mesma UX (quadro-negro, lançamento rápido, bottom sheets no celular, tudo em pt-BR), mas em azul para não confundir com o verde do app de horas.
+Irmão do [Horas na Vida](https://github.com/Guilherme-Vianna/personal-life-hours-tracker): mesma stack, mesma UX (quadro-negro, lançamento rápido, bottom sheets no celular, tudo em pt-BR), mas com visual azul e mais sóbrio ("enterprise": Inter, linhas retas, cantos discretos) para não confundir com o app de horas.
 
 - **Painel**: por mês. Quanto ainda dá pra gastar, quanto por dia nos dias que faltam, ritmo ideal × real, balanço do mês (renda − contas − investimentos − gastos), o que está programado no mês, gastos por categoria, por dia, por forma de pagamento e dia da semana, onde mais foi dinheiro e metas.
 - **Gastos**: lançamentos agrupados por dia, com filtros de período, categoria, forma de pagamento e busca; criar/editar/apagar. Gastos e entradas extras.

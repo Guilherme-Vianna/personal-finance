@@ -62,18 +62,18 @@ async function Loans() {
 
       <div className="stagger grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {loans.map((loan) => (
-          <article key={loan.name} className="lift relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-surface p-4 pt-5 shadow-card sm:p-5 sm:pt-6">
+          <article key={loan.name} className="lift relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-lg border border-border bg-surface p-4 pt-5 shadow-card sm:p-5 sm:pt-6">
             <span className="absolute inset-x-0 top-0 h-1 bg-violet-500" aria-hidden />
             <div className="flex items-start justify-between gap-3">
               <p className="flex items-center gap-2 text-lg font-bold">
-                <span className="flex size-9 items-center justify-center rounded-full bg-violet-100 text-base font-extrabold text-violet-800">{loan.name.charAt(0).toUpperCase()}</span>
+                <span className="flex size-9 items-center justify-center rounded-full bg-violet-100 text-base font-semibold text-violet-800">{loan.name.charAt(0).toUpperCase()}</span>
                 {loan.name}
               </p>
               {loan.balance <= 0 && loan.lent > 0 && <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-bold text-brand-800">Quitado</span>}
             </div>
             <div>
               <div className="mb-1.5 flex items-baseline justify-between gap-2">
-                <span className="font-hand text-3xl leading-none font-bold text-violet-800">
+                <span className="text-2xl leading-none font-semibold tracking-tight tabular-nums text-violet-800">
                   <CountUp value={loan.percent} suffix="%" />
                 </span>
                 <span className="text-sm text-muted tabular-nums">
@@ -87,7 +87,7 @@ async function Loans() {
               </p>
             </div>
             {loan.plans.length > 0 && (
-              <ul className="flex flex-col gap-1 rounded-xl bg-violet-50/60 px-3 py-2 text-xs text-violet-900">
+              <ul className="flex flex-col gap-1 rounded-md bg-violet-50/60 px-3 py-2 text-xs text-violet-900">
                 {loan.plans.map((plan) => (
                   <li key={plan.id} className="flex justify-between gap-2">
                     <span className="truncate">
@@ -110,7 +110,7 @@ async function Loans() {
         ))}
       </div>
 
-      <Card className="notebook">
+      <Card>
         <CardTitle>Como funciona</CardTitle>
         <ul className="flex flex-col gap-2 text-sm text-muted">
           <li>🤝 Marque um gasto (ou uma conta parcelada no Orçamento) como emprestado e diga para quem.</li>

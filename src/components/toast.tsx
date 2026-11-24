@@ -22,11 +22,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`toast flex items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-semibold shadow-xl ${toast.leaving ? "toast-leave" : ""} ${
+            className={`toast flex items-center gap-2.5 rounded-lg px-4 py-3 text-sm font-semibold shadow-xl ${toast.leaving ? "toast-leave" : ""} ${
               toast.tone === "error" ? "bg-danger text-white" : "chalkboard text-chalk"
             }`}
           >
-            <span className={`flex size-5 items-center justify-center rounded-full text-xs ${toast.tone === "error" ? "bg-white/20" : "bg-pencil text-board-dark"}`} aria-hidden>
+            <span className={`flex size-5 items-center justify-center rounded-full text-xs ${toast.tone === "error" ? "bg-white/20" : "bg-brand-400 text-white"}`} aria-hidden>
               {toast.tone === "error" ? "!" : "✓"}
             </span>
             {toast.message}

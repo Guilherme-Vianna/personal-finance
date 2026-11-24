@@ -21,7 +21,7 @@ export function Button({
     <button
       type="button"
       {...props}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-xl leading-tight font-semibold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:scale-[0.98] disabled:cursor-not-allowed ${
+      className={`inline-flex items-center justify-center gap-1.5 rounded-md leading-tight font-semibold transition duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:scale-[0.98] disabled:cursor-not-allowed ${
         size === "sm" ? "min-h-10 px-3 py-1.5 text-sm sm:min-h-0" : "min-h-11 px-4 py-2.5 text-sm sm:min-h-0"
       } ${buttonStyles[variant]} ${className}`}
     />
@@ -29,16 +29,13 @@ export function Button({
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`min-w-0 rounded-2xl border border-border bg-surface p-4 sm:p-5 shadow-card ${className}`}>{children}</section>;
+  return <section className={`min-w-0 rounded-lg border border-border bg-surface p-4 sm:p-5 shadow-card ${className}`}>{children}</section>;
 }
 
 export function CardTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="flex items-center gap-2 text-base font-bold text-ink">
-        <span className="h-4 w-1 rounded-full bg-pencil" aria-hidden />
-        {children}
-      </h2>
+      <h2 className="text-xs font-semibold tracking-wider text-muted uppercase">{children}</h2>
       {action}
     </div>
   );
@@ -46,7 +43,7 @@ export function CardTitle({ children, action }: { children: ReactNode; action?: 
 
 // 16px on phones: iOS zooms the whole page when a focused field is smaller than that.
 export const inputClass =
-  "min-h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3 py-2.5 text-base text-ink sm:min-h-0 sm:pointer-fine:text-sm placeholder:text-muted/70 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200 aria-invalid:border-danger";
+  "min-h-11 w-full min-w-0 rounded-md border border-border bg-surface px-3 py-2.5 text-base text-ink sm:min-h-0 sm:pointer-fine:text-sm placeholder:text-muted/70 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200 aria-invalid:border-danger";
 
 export const iconButtonClass = "inline-flex size-10 items-center justify-center rounded-lg text-muted hover:bg-brand-50 hover:text-brand-800 sm:size-9";
 export const dangerIconButtonClass = "inline-flex size-10 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger sm:size-9";
@@ -119,7 +116,7 @@ export function Modal({ open, onClose, title, children, wide = false }: { open: 
       ref={ref}
       onClose={onClose}
       onClick={(event) => event.target === ref.current && onClose()}
-      className={`mx-0 mt-auto mb-0 max-h-[92dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl border border-b-0 border-border bg-surface p-0 text-ink shadow-2xl sm:m-auto sm:w-[calc(100%-2rem)] sm:rounded-3xl sm:border-b ${wide ? "sm:max-w-2xl" : "sm:max-w-lg"}`}
+      className={`mx-0 mt-auto mb-0 max-h-[92dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-xl border border-b-0 border-border bg-surface p-0 text-ink shadow-2xl sm:m-auto sm:w-[calc(100%-2rem)] sm:rounded-xl sm:border-b ${wide ? "sm:max-w-2xl" : "sm:max-w-lg"}`}
     >
       {open && (
         <>
@@ -172,7 +169,7 @@ export function ConfirmButton({
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title={title}>
         <p className="text-sm text-muted">{message}</p>
-        {error && <p className="mt-3 rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
+        {error && <p className="mt-3 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
         <FormActions className="mt-6">
           <Button variant="secondary" onClick={() => setOpen(false)}>
             Cancelar
@@ -203,11 +200,11 @@ export function ConfirmButton({
 
 export function EmptyState({ title, description, action, icon = "📒" }: { title: string; description: string; action?: ReactNode; icon?: string }) {
   return (
-    <div className="notebook flex animate-[rise_0.45s_var(--ease-out-soft)_both] flex-col items-center rounded-2xl border border-dashed border-brand-200 bg-surface px-6 py-12 text-center">
-      <span className="animate-[float_3s_ease-in-out_infinite] text-4xl" aria-hidden>
+    <div className="flex flex-col items-center rounded-lg border border-border bg-surface px-6 py-12 text-center">
+      <span className="text-3xl opacity-80" aria-hidden>
         {icon}
       </span>
-      <h3 className="mt-3 font-hand text-2xl font-bold text-brand-800">{title}</h3>
+      <h3 className="mt-3 text-base font-semibold text-ink">{title}</h3>
       <p className="mt-1 max-w-sm text-sm text-muted">{description}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>

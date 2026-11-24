@@ -31,11 +31,11 @@ export function BudgetCheck({ items, month, today }: { items: RecurringRow[]; mo
         <>
           <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {counters.map(({ status, rows: own }) => (
-              <div key={status} className={`rounded-xl px-3 py-2 ${STATUS[status].tone}`}>
+              <div key={status} className={`rounded-md px-3 py-2 ${STATUS[status].tone}`}>
                 <p className="text-[11px] font-bold tracking-wider uppercase">
                   {STATUS[status].icon} {STATUS[status].label}
                 </p>
-                <p className="text-lg font-extrabold tabular-nums">{own.length}</p>
+                <p className="text-lg font-semibold tabular-nums">{own.length}</p>
                 <p className="text-xs tabular-nums">{formatMoney(own.reduce((t, r) => t + (r.payment?.amount ?? r.planned), 0), { round: true })}</p>
               </div>
             ))}

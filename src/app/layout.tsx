@@ -1,10 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Caveat, Nunito } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ToastProvider } from "@/components/toast";
 import "./globals.css";
 
-const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"] });
-const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin"], weight: ["600", "700"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: { default: "Grana na Vida", template: "%s · Grana na Vida" },
@@ -15,7 +14,7 @@ export const viewport: Viewport = { themeColor: "#1b3558", viewportFit: "cover",
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${nunito.variable} ${caveat.variable} h-full antialiased`}>
+    <html lang="pt-BR" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full font-sans">
         <ToastProvider>{children}</ToastProvider>
       </body>

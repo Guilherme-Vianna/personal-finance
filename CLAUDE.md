@@ -49,7 +49,9 @@ Sibling of personal-life-hours-tracker: same stack, UX and conventions.
 - Deleting a category never blocks: transactions (`category_id` nullable, `on delete set null`) and recurring items become
   orphans; `orphanCounts()` drives the `OrphanAlert` banner and `/gastos?categoria=sem` lists them.
 - No authentication by design (single-user app); don't introduce it unless asked.
-- Theme is blue (navy chalkboard `board`, `brand-*` blues, yellow `pencil` accent) so it is not confused with the green sibling app.
+- Theme is blue and "enterprise" (unlike the playful green sibling app): Inter only (no handwritten font), flat navy sidebar
+  (`chalkboard` is a solid `board` color now), straight divider under `PageHeader` (no squiggle), small radii (`rounded-md`/`rounded-lg`),
+  uppercase small `CardTitle`, no textures (`notebook` removed) and no floating/lifting motion. `pencil` yellow is only a rare accent.
 - Motion and mobile rules are the same as the sibling app: tokens in `src/app/globals.css`, `PageSuspense`, `stagger`,
   `lift`, `Modal` as bottom sheet below `sm`, `FormActions`, 16px inputs on phones, 40px touch targets, `pointer-fine:` for
   hover-only UI, explicit grid columns with `minmax(0,…)`, rtl scrollers for charts.

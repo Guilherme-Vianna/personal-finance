@@ -44,7 +44,7 @@ function StaticNavLinks({ pathname }: { pathname: string | null }) {
         key={item.href}
         href={item.href}
         aria-current={active ? "page" : undefined}
-        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition duration-200 ${active ? "bg-chalk text-board-dark shadow-md" : "text-chalk/80 hover:translate-x-1 hover:bg-white/10 hover:text-chalk"}`}
+        className={`group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${active ? "bg-white/10 text-white before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-brand-300" : "text-chalk/70 hover:bg-white/5 hover:text-chalk"}`}
       >
         <NavIcon d={item.icon} />
         {item.label}
@@ -85,7 +85,7 @@ function StaticMobileNav({ pathname }: { pathname: string | null }) {
       <MobileTab item={PAINEL} pathname={pathname} />
       <MobileTab item={GASTOS} pathname={pathname} />
       <button type="button" onClick={() => open()} className={`${TAB_CLASS} text-ink`}>
-        <span className="-mt-6 flex size-13 items-center justify-center rounded-full bg-pencil text-board-dark shadow-lg ring-4 ring-surface transition active:scale-95">
+        <span className="-mt-5 flex size-12 items-center justify-center rounded-lg bg-brand-600 text-white shadow-lg ring-4 ring-surface transition active:scale-95">
           <svg viewBox="0 0 20 20" fill="currentColor" className="size-7" aria-hidden>
             <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
           </svg>
@@ -107,7 +107,7 @@ function StaticMobileNav({ pathname }: { pathname: string | null }) {
                   href={item.href}
                   onClick={() => setMoreOpen(false)}
                   aria-current={active ? "page" : undefined}
-                  className={`flex min-h-14 items-center gap-3 rounded-xl px-3 py-2 ${active ? "bg-brand-50 text-brand-800" : "text-ink hover:bg-brand-50"}`}
+                  className={`flex min-h-14 items-center gap-3 rounded-md px-3 py-2 ${active ? "bg-brand-50 text-brand-800" : "text-ink hover:bg-brand-50"}`}
                 >
                   <NavIcon d={item.icon} />
                   <span className="min-w-0">

@@ -99,7 +99,7 @@ function OverrideForm({ item, initialMonth, onDone }: { item: OverrideTarget; in
       <Field label="Motivo (opcional)" htmlFor={`${id}-notes`}>
         <input id={`${id}-notes`} className={inputClass} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex.: 13º salário, desconto, férias" />
       </Field>
-      {errors._ && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
+      {errors._ && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
       <FormActions>
         {existing ? (
           <Button

@@ -126,7 +126,7 @@ export function TransactionForm({
 
   return (
     <form ref={formRef} onSubmit={(event) => submit(event)} className="flex flex-col gap-4" noValidate>
-      {saved && <p className="rounded-xl bg-brand-50 px-3 py-2 text-sm font-medium text-brand-800">✓ {saved}</p>}
+      {saved && <p className="rounded-md bg-brand-50 px-3 py-2 text-sm font-medium text-brand-800">✓ {saved}</p>}
 
       <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo">
         {(["expense", "income"] as const).map((option) => (
@@ -136,7 +136,7 @@ export function TransactionForm({
             role="radio"
             aria-checked={kind === option}
             onClick={() => switchKind(option)}
-            className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold transition sm:min-h-0 ${
+            className={`min-h-11 rounded-md border px-3 py-2 text-sm font-semibold transition sm:min-h-0 ${
               kind === option ? "border-transparent bg-brand-600 text-white shadow-sm" : "border-border bg-surface text-ink hover:border-brand-300"
             }`}
           >
@@ -239,7 +239,7 @@ export function TransactionForm({
       )}
 
       {kind === "expense" && (
-        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border p-3">
+        <div className="flex flex-col gap-2 rounded-md border border-dashed border-border p-3">
           <Toggle checked={lent} onChange={setLent} label="🤝 Emprestado (foi pra outra pessoa)" />
           {lent ? (
             <Field label="Para quem?" htmlFor={`${id}-lent`} error={errors.lentTo}>
@@ -260,7 +260,7 @@ export function TransactionForm({
         <textarea id={`${id}-notes`} rows={2} className={inputClass} value={notes} onChange={(event) => setNotes(event.target.value)} />
       </Field>
 
-      {errors._ && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
+      {errors._ && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{errors._}</p>}
 
       <FormActions>
         {!editing && (

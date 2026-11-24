@@ -233,7 +233,7 @@ export function FileImport({ categories, planned, configured, today }: { categor
 
   if (!configured) {
     return (
-      <Card className="notebook">
+      <Card>
         <CardTitle>Falta configurar a IA</CardTitle>
         <p className="text-sm text-muted">
           Defina a variável de ambiente <code className="rounded bg-brand-50 px-1 font-semibold text-brand-800">GEMINI_API_KEY</code> (no <code>.env.local</code> e na Vercel) para importar arquivos com IA.
@@ -261,12 +261,12 @@ export function FileImport({ categories, planned, configured, today }: { categor
               event.preventDefault();
               if (event.dataTransfer.files.length) addFiles(event.dataTransfer.files);
             }}
-            className="notebook flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-brand-200 bg-surface p-4 text-center transition hover:border-brand-400"
+            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-surface p-4 text-center transition hover:border-brand-400"
           >
-            <span className="animate-[float_3s_ease-in-out_infinite] text-4xl" aria-hidden>
+            <span className="text-4xl" aria-hidden>
               📂
             </span>
-            <span className="font-hand text-2xl font-bold text-brand-800">Foto, PDF, planilha ou extrato</span>
+            <span className="text-base font-semibold text-brand-800">Foto, PDF, planilha ou extrato</span>
             <span className="max-w-xs text-xs text-muted">Fatura do cartão, extrato (PDF, OFX, CSV), planilha .xlsx, nota fiscal ou print do banco. Pode mandar vários.</span>
           </button>
           <input
@@ -296,7 +296,7 @@ export function FileImport({ categories, planned, configured, today }: { categor
           {files.length > 0 && (
             <ul className="flex flex-col gap-1.5">
               {files.map((item) => (
-                <li key={item.id} className="flex items-start gap-2 rounded-xl bg-brand-50/60 px-3 py-2 text-sm">
+                <li key={item.id} className="flex items-start gap-2 rounded-md bg-brand-50/60 px-3 py-2 text-sm">
                   <span aria-hidden>{fileIcon(item.file)}</span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{item.file.name}</p>
@@ -322,14 +322,14 @@ export function FileImport({ categories, planned, configured, today }: { categor
           <Button onClick={read} disabled={!pendingFiles || reading}>
             {reading ? "Lendo arquivos…" : pendingFiles > 1 ? `✨ Ler ${pendingFiles} arquivos com IA` : "✨ Ler com IA"}
           </Button>
-          {error && <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
+          {error && <p className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
         </div>
       </Card>
 
       <div className="flex min-w-0 flex-col gap-4">
         {saved !== null && rows.length === 0 && (
-          <Card className="notebook">
-            <p className="font-hand text-3xl font-bold text-brand-800">Pronto! {saved} lançamento(s) salvos ✓</p>
+          <Card>
+            <p className="text-xl font-semibold tracking-tight text-brand-800">Pronto! {saved} lançamento(s) salvos ✓</p>
             <p className="mt-1 text-sm text-muted">
               Eles já contam no painel e no orçamento.{" "}
               <Link href="/gastos" className="font-semibold text-brand-700 hover:underline">
@@ -340,7 +340,7 @@ export function FileImport({ categories, planned, configured, today }: { categor
         )}
 
         {rows.length === 0 && !reading && saved === null && (
-          <Card className="notebook">
+          <Card>
             <CardTitle>Como funciona</CardTitle>
             <ul className="flex flex-col gap-2 text-sm text-muted">
               <li>📂 Envie fotos, PDFs, planilhas ou extratos exportados do banco (OFX/CSV), ou cole um texto (ex.: histórico do Google Pay).</li>
@@ -356,7 +356,7 @@ export function FileImport({ categories, planned, configured, today }: { categor
         {reading && rows.length === 0 && (
           <div className="flex flex-col gap-3" aria-busy aria-label="Lendo">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="skeleton h-24 rounded-2xl" />
+              <div key={i} className="skeleton h-24 rounded-lg" />
             ))}
           </div>
         )}
@@ -428,7 +428,7 @@ export function FileImport({ categories, planned, configured, today }: { categor
                 const missing = missingFields(row);
                 const flag = (field: string) => (missing.includes(field) ? missingClass : "");
                 return (
-                  <li key={row.key} className={`rounded-2xl border bg-surface p-3 shadow-card transition sm:p-4 ${row.include ? (showErrors && missing.length ? "border-danger" : "border-border") : "border-dashed border-border opacity-50"}`}>
+                  <li key={row.key} className={`rounded-lg border bg-surface p-3 shadow-card transition sm:p-4 ${row.include ? (showErrors && missing.length ? "border-danger" : "border-border") : "border-dashed border-border opacity-50"}`}>
                     <div className="flex gap-3">
                       <span className="w-1.5 shrink-0 self-stretch rounded-full" style={{ background: color }} />
                       <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
@@ -453,7 +453,7 @@ export function FileImport({ categories, planned, configured, today }: { categor
                             ))}
                           </select>
                         ) : (
-                          <span className="flex items-center rounded-xl bg-brand-50 px-3 text-sm font-semibold text-brand-800">💰 Entrada</span>
+                          <span className="flex items-center rounded-md bg-brand-50 px-3 text-sm font-semibold text-brand-800">💰 Entrada</span>
                         )}
                         <div className="col-span-2 flex items-center justify-between gap-2 sm:col-span-1">
                           <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold sm:min-h-0">
@@ -492,7 +492,7 @@ export function FileImport({ categories, planned, configured, today }: { categor
               + Adicionar linha
             </Button>
 
-            <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface/95 p-3 shadow-lift backdrop-blur lg:bottom-4">
+            <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 flex items-center justify-between gap-3 rounded-lg border border-border bg-surface/95 p-3 shadow-lift backdrop-blur lg:bottom-4">
               <p className="text-sm text-muted">
                 <strong className="text-ink">{selected.length}</strong> selecionado(s) · <strong className="text-ink tabular-nums">{formatMoney(Math.abs(total))}</strong>
                 {incomplete > 0 && <span className="block text-xs font-semibold text-amber-800 sm:inline sm:pl-2">{incomplete} para completar</span>}
@@ -514,7 +514,7 @@ function PlannedLink({ row, planned, onChange }: { row: Row; planned: PlannedOpt
   const pending = Boolean(row.plannedId) && !row.plannedConfirmed;
   const amount = parseMoney(row.amount);
   return (
-    <div className={`mt-2 ml-4.5 flex flex-col gap-1.5 rounded-xl border px-2.5 py-2 sm:flex-row sm:items-center ${pending ? "border-violet-300 bg-violet-50" : row.plannedId ? "border-brand-200 bg-brand-50/60" : "border-dashed border-border"}`}>
+    <div className={`mt-2 ml-4.5 flex flex-col gap-1.5 rounded-md border px-2.5 py-2 sm:flex-row sm:items-center ${pending ? "border-violet-300 bg-violet-50" : row.plannedId ? "border-brand-200 bg-brand-50/60" : "border-dashed border-border"}`}>
       <span className="shrink-0 text-xs font-semibold text-muted">🔗 Orçamento:</span>
       <select
         aria-label="Relacionar com item do orçamento"

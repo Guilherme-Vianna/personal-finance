@@ -36,7 +36,7 @@ export function TransactionList({ transactions, today }: { transactions: Transac
                 {spent > 0 && <span className="text-danger">-{formatMoney(spent)}</span>}
               </span>
             </header>
-            <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+            <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface">
               {rows.map((row) => (
                 <li key={row.id} className="group flex gap-3 px-4 py-3 sm:items-center">
                   <span className="w-1.5 shrink-0 self-stretch rounded-full sm:h-9 sm:self-center" style={{ background: row.categoryColor }} />

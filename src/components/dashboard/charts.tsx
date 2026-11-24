@@ -9,11 +9,11 @@ export function barTooltipPosition(index: number, length: number) {
 
 export function StatCard({ label, value, detail, highlight = false, tone }: { label: string; value: string; detail: string; highlight?: boolean; tone?: "good" | "bad" }) {
   return (
-    <div className={`lift min-w-0 rounded-2xl border p-4 shadow-card sm:p-5 ${highlight ? "chalkboard border-transparent text-chalk" : "border-border bg-surface"}`}>
+    <div className={`lift min-w-0 rounded-lg border p-4 shadow-card sm:p-5 ${highlight ? "chalkboard border-transparent text-chalk" : "border-border bg-surface"}`}>
       <p className={`text-[11px] font-bold tracking-wider uppercase ${highlight ? "text-chalk/70" : "text-muted"}`}>{label}</p>
       <p
-        className={`mt-1.5 line-clamp-2 leading-tight font-extrabold break-words ${
-          highlight ? `font-hand text-4xl sm:text-5xl ${tone === "bad" ? "text-orange-300" : ""}` : `${value.length > 12 ? "text-base sm:text-lg" : "text-2xl sm:text-3xl"} ${tone === "bad" ? "text-danger" : tone === "good" ? "text-brand-700" : "text-ink"}`
+        className={`mt-1.5 line-clamp-2 leading-tight font-semibold tracking-tight tabular-nums break-words ${
+          highlight ? `text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl ${tone === "bad" ? "text-orange-300" : ""}` : `${value.length > 12 ? "text-base sm:text-lg" : "text-2xl sm:text-3xl"} ${tone === "bad" ? "text-danger" : tone === "good" ? "text-brand-700" : "text-ink"}`
         }`}
       >
         {value}
@@ -41,7 +41,7 @@ export function CategoryDonut({ data, total, caption = "no mês" }: { data: Slic
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-extrabold tabular-nums">{formatMoney(total, { round: true })}</span>
+        <span className="text-xl font-semibold tabular-nums">{formatMoney(total, { round: true })}</span>
         <span className="text-xs text-muted">{caption}</span>
       </div>
     </div>
@@ -140,7 +140,7 @@ export function WeekdayChart({ data }: { data: { key: string; label: string; amo
         <div key={day.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
           <span className="text-[10px] font-semibold whitespace-nowrap text-muted tabular-nums sm:text-[11px]">{day.amount ? formatMoneyShort(day.amount).replace("R$ ", "") : ""}</span>
           <div
-            className={`bar-rise w-full rounded-t-lg ${day.key === "0" || day.key === "6" ? "bg-pencil" : "bg-brand-500"}`}
+            className={`bar-rise w-full rounded-t-lg ${day.key === "0" || day.key === "6" ? "bg-brand-300" : "bg-brand-600"}`}
             style={{ height: `calc((100% - 2.5rem) * ${day.amount / max})`, minHeight: day.amount ? 4 : 0 }}
           />
           <span className="text-xs font-semibold text-muted">{day.label}</span>
@@ -177,7 +177,7 @@ export function RankingList({ data }: { data: { key: string; label: string; amou
     <ol className="flex flex-col divide-y divide-border">
       {data.map((item, index) => (
         <li key={item.key} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-extrabold text-brand-800">{index + 1}</span>
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-800">{index + 1}</span>
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold">{item.label}</p>
             <p className="text-xs text-muted">

@@ -52,7 +52,7 @@ async function InsightsView({ searchParams }: { searchParams: PageProps<"/analis
       ) : (
         <>
           {data.insights.length > 0 && (
-            <Card className="notebook">
+            <Card>
               <CardTitle>O que os números dizem</CardTitle>
               <ul className="stagger flex flex-col gap-2.5">
                 {data.insights.map((insight) => (
