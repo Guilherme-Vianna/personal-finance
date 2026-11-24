@@ -1,0 +1,155 @@
+export const TIME_ZONE = process.env.NEXT_PUBLIC_TIME_ZONE ?? "America/Sao_Paulo";
+
+export const WEEKDAYS = [
+  { value: 1, short: "Seg", label: "Segunda" },
+  { value: 2, short: "Ter", label: "Terça" },
+  { value: 3, short: "Qua", label: "Quarta" },
+  { value: 4, short: "Qui", label: "Quinta" },
+  { value: 5, short: "Sex", label: "Sexta" },
+  { value: 6, short: "Sáb", label: "Sábado" },
+  { value: 0, short: "Dom", label: "Domingo" },
+] as const;
+
+export const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+export const MONTH_NAMES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+
+export function todayISO(now = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+
+function toUTC(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+function fromUTC(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+export function addDays(iso: string, days: number) {
+  const date = toUTC(iso);
+  date.setUTCDate(date.getUTCDate() + days);
+  return fromUTC(date);
+}
+
+export function weekdayOf(iso: string) {
+  return toUTC(iso).getUTCDay();
+}
+
+export function startOfMonth(iso: string) {
+  return `${iso.slice(0, 7)}-01`;
+}
+
+export function daysBetween(from: string, to: string) {
+  return Math.round((toUTC(to).getTime() - toUTC(from).getTime()) / 86_400_000);
+}
+
+export function eachDay(from: string, to: string) {
+  const days: string[] = [];
+  for (let day = from; day <= to; day = addDays(day, 1)) days.push(day);
+  return days;
+}
+
+export function formatTimestamp(value: Date | string) {
+  const parts = new Intl.DateTimeFormat("pt-BR", { timeZone: TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date(value));
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value;
+  return `${part("day")}/${part("month")} às ${part("hour")}:${part("minute")}`;
+}
+
+export function formatDate(iso: string, options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short" }) {
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", ...options }).format(toUTC(iso));
+}
+
+export function formatDayHeading(iso: string, today: string) {
+  if (iso === today) return "Hoje";
+  if (iso === addDays(today, -1)) return "Ontem";
+  return formatDate(iso, { weekday: "long", day: "2-digit", month: "long" });
+}
+
+// ---------- Months ("YYYY-MM") ----------
+
+export function monthOf(iso: string) {
+  return iso.slice(0, 7);
+}
+
+export function isMonth(value: unknown): value is string {
+  return typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
+
+export function addMonths(month: string, count: number) {
+  const [y, m] = month.split("-").map(Number);
+  const index = y * 12 + (m - 1) + count;
+  return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
+}
+
+export function monthsBetween(from: string, to: string) {
+  const [fy, fm] = from.split("-").map(Number);
+  const [ty, tm] = to.split("-").map(Number);
+  return ty * 12 + tm - (fy * 12 + fm);
+}
+
+export function eachMonth(from: string, to: string) {
+  const months: string[] = [];
+  for (let month = from; month <= to; month = addMonths(month, 1)) months.push(month);
+  return months;
+}
+
+export function daysInMonth(month: string) {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 0)).getUTCDate();
+}
+
+export function lastDayOfMonth(month: string) {
+  return `${month}-${String(daysInMonth(month)).padStart(2, "0")}`;
+}
+
+export function dayInMonth(month: string, day: number) {
+  return `${month}-${String(Math.min(day, daysInMonth(month))).padStart(2, "0")}`;
+}
+
+export function formatMonth(month: string, style: "long" | "short" = "long") {
+  const [y, m] = month.split("-").map(Number);
+  return style === "long" ? `${MONTH_NAMES[m - 1]} de ${y}` : `${MONTHS[m - 1]}/${String(y).slice(2)}`;
+}
+
+// ---------- Periods (Gastos) ----------
+
+export type Period = "month" | "last-month" | "30d" | "90d" | "year" | "all";
+
+export const PERIODS: { value: Period; label: string }[] = [
+  { value: "month", label: "Este mês" },
+  { value: "last-month", label: "Mês passado" },
+  { value: "30d", label: "30 dias" },
+  { value: "90d", label: "90 dias" },
+  { value: "year", label: "Este ano" },
+  { value: "all", label: "Tudo" },
+];
+
+export function isPeriod(value: unknown): value is Period {
+  return PERIODS.some((period) => period.value === value);
+}
+
+export function periodRange(period: Period, today: string): { from: string | null; to: string | null } {
+  switch (period) {
+    case "month":
+      return { from: startOfMonth(today), to: lastDayOfMonth(monthOf(today)) };
+    case "last-month": {
+      const month = addMonths(monthOf(today), -1);
+      return { from: `${month}-01`, to: lastDayOfMonth(month) };
+    }
+    case "30d":
+      return { from: addDays(today, -29), to: today };
+    case "90d":
+      return { from: addDays(today, -89), to: today };
+    case "year":
+      return { from: `${today.slice(0, 4)}-01-01`, to: `${today.slice(0, 4)}-12-31` };
+    case "all":
+      return { from: null, to: null };
+  }
+}
+
+export const INSIGHT_WINDOWS = [
+  { value: "3", label: "3 meses" },
+  { value: "6", label: "6 meses" },
+  { value: "12", label: "12 meses" },
+];
