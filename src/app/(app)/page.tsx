@@ -11,6 +11,8 @@ import { Card, CardTitle, EmptyState, ProgressBar } from "@/components/ui";
 import type { MonthSummary } from "@/lib/budget";
 import { formatDate, formatMonth, isMonth, monthOf, todayISO } from "@/lib/dates";
 import { formatMoney, formatPercent, RECURRING_KIND_LABELS } from "@/lib/format";
+import { OrphanAlert } from "@/components/orphan-alert";
+import { orphanCounts } from "@/lib/services/categories";
 import { listGoals } from "@/lib/services/goals";
 import { dashboardStats, type DashboardStats } from "@/lib/services/stats";
 
@@ -32,7 +34,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searc
   const currentMonth = monthOf(today);
   const month = isMonth(params.mes) ? params.mes : currentMonth;
   const includeOutside = params.fora === "1";
-  const [stats, goals] = await Promise.all([dashboardStats({ month, includeOutside, today }), listGoals(today)]);
+  const [stats, goals, orphans] = await Promise.all([dashboardStats({ month, includeOutside, today }), listGoals(today), orphanCounts()]);
   const { summary } = stats;
   const activeGoals = goals.filter((goal) => goal.status === "active");
   const isCurrent = month === currentMonth;
@@ -40,6 +42,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searc
 
   return (
     <div className="flex flex-col gap-6">
+      <OrphanAlert transactions={orphans.transactions} recurring={orphans.recurring} />
       <MonthFilters month={month} currentMonth={currentMonth} includeOutside={includeOutside} />
 
       <div className="stagger grid grid-cols-2 gap-3 lg:grid-cols-4">

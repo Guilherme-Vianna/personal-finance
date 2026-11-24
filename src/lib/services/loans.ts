@@ -31,7 +31,7 @@ export async function listLoans(today: string) {
     db
       .select({ id: transactions.id, date: transactions.date, description: transactions.description, amount: transactions.amount, lentTo: transactions.lentTo, categoryName: categories.name })
       .from(transactions)
-      .innerJoin(categories, eq(categories.id, transactions.categoryId))
+      .leftJoin(categories, eq(categories.id, transactions.categoryId))
       .where(isNotNull(transactions.lentTo)),
     listRecurring(),
     listRepayments(),

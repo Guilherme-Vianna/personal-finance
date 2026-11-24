@@ -96,9 +96,8 @@ export const transactions = pgTable(
     date: date("date", { mode: "string" }).notNull(),
     description: text("description").notNull(),
     amount: money("amount").notNull(),
-    categoryId: uuid("category_id")
-      .notNull()
-      .references(() => categories.id, { onDelete: "restrict" }),
+    // Null when its category was deleted: the entry stays as an orphan until recategorized.
+    categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
     method: text("method", { enum: PAYMENT_METHODS }),
     lentTo: text("lent_to"),
     notes: text("notes"),

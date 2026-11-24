@@ -35,10 +35,13 @@ Sibling of personal-life-hours-tracker: same stack, UX and conventions.
   excluded from personal spending, fixed bills and both leftovers, and repayments don't count as income; `src/lib/services/loans.ts` builds per-person balances (lent up to today − `loan_repayments`).
 - Budget math is pure in `src/lib/budget.ts` (`monthSummary`, mirrors the spreadsheet's "Restante Total" and "Gasto Diário
   Esperado"); goal progress in `src/lib/goals.ts`; `/analises` math in `src/lib/insights.ts`.
-- AI import (`/importar`, `src/lib/services/ai-import.ts`) uses Gemini via `@google/genai` with a JSON schema generated from Zod
-  (`z.toJSONSchema`), validated with the same schema. Images/PDFs go as inline data; xlsx is flattened with exceljs, CSV/OFX/TXT go
+- AI import (`/importar`, `src/lib/services/ai-import.ts`) is a LangChain pipeline (`RunnableSequence`: messages →
+  `ChatGoogleGenerativeAI.withStructuredOutput(zod)` → normalize → already-added check). Gemini's schema has no union types, so
+  uncertain fields are `.optional()` (never `.nullable()`). Pasted text (e.g. Google Pay history) is sent as a text file. Images/PDFs go as inline data; xlsx is flattened with exceljs, CSV/OFX/TXT go
   as text (UTF-8, falling back to Windows-1252). The model leaves unsure fields null instead of guessing; likely duplicates
   (same amount, ±2 days) come unchecked. Nothing is saved until the user reviews and bulk-saves (`/api/transactions/bulk`).
+- Deleting a category never blocks: transactions (`category_id` nullable, `on delete set null`) and recurring items become
+  orphans; `orphanCounts()` drives the `OrphanAlert` banner and `/gastos?categoria=sem` lists them.
 - No authentication by design (single-user app); don't introduce it unless asked.
 - Theme is blue (navy chalkboard `board`, `brand-*` blues, yellow `pencil` accent) so it is not confused with the green sibling app.
 - Motion and mobile rules are the same as the sibling app: tokens in `src/app/globals.css`, `PageSuspense`, `stagger`,

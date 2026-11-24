@@ -1,5 +1,7 @@
 import "server-only";
-import { GoogleGenAI, type Part } from "@google/genai";
+import { HumanMessage, SystemMessage, type ContentBlock } from "@langchain/core/messages";
+import { RunnableLambda, RunnableSequence } from "@langchain/core/runnables";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { and, gte, lte } from "drizzle-orm";
 import ExcelJS from "exceljs";
 import { z } from "zod";
@@ -22,13 +24,13 @@ const MAX_TEXT_CHARS = 300_000;
 const extraction = z.object({
   entries: z.array(
     z.object({
-      date: z.string().nullable().describe("YYYY-MM-DD, or null when the file shows no date"),
+      date: z.string().optional().describe("YYYY-MM-DD; omit when the file shows no date or you are not sure"),
       description: z.string().describe("Short name of the purchase or income, in Portuguese, as the user would write it; empty string if unreadable"),
-      amount: z.number().nullable().describe("Positive value in BRL, or null when not sure"),
+      amount: z.number().optional().describe("Positive value in BRL; omit when not sure"),
       kind: z.enum(["expense", "income"]),
-      method: z.enum(["credit", "debit", "pix", "cash", "voucher"]).nullable(),
-      category: z.string().nullable().describe("Exactly one of the given category names, or null"),
-      doubt: z.string().nullable().describe("Short note in Portuguese when something is unclear, else null"),
+      method: z.enum(["credit", "debit", "pix", "cash", "voucher"]).optional().describe("Omit when not sure"),
+      category: z.string().optional().describe("Exactly one of the given category names; omit when none fits"),
+      doubt: z.string().optional().describe("Short note in Portuguese when something is unclear; omit otherwise"),
     }),
   ),
   summary: z.string().describe("One short sentence in Portuguese about what the file is"),
@@ -39,7 +41,7 @@ export type ExtractedEntry = {
   description: string;
   amount: number | null;
   categoryId: string | null;
-  method: z.infer<typeof extraction>["entries"][number]["method"];
+  method: NonNullable<z.infer<typeof extraction>["entries"][number]["method"]> | null;
   kind: "expense" | "income";
   doubt: string | null;
   duplicateOf: string | null;
@@ -82,13 +84,13 @@ async function sheetToText(buffer: ArrayBuffer) {
     .join("\n\n");
 }
 
-// Turns any supported file into Gemini input: images and PDFs go as binary, everything else as text.
-async function filePart(file: File): Promise<{ part: Part; label: string }> {
+// Turns any supported file into model input: images and PDFs go as binary media, everything else as text.
+async function filePart(file: File): Promise<{ part: ContentBlock.Multimodal.Image | ContentBlock.Multimodal.File | ContentBlock.Text; label: string }> {
   if (file.size > MAX_BYTES) throw new ApiError(422, `"${file.name}" é grande demais (máx. 4 MB). Divida o arquivo ou exporte um período menor.`);
   const extension = extensionOf(file.name);
   const buffer = await file.arrayBuffer();
-  if (IMAGE_TYPES.includes(file.type)) return { part: { inlineData: { mimeType: file.type, data: Buffer.from(buffer).toString("base64") } }, label: "imagem" };
-  if (file.type === "application/pdf" || extension === "pdf") return { part: { inlineData: { mimeType: "application/pdf", data: Buffer.from(buffer).toString("base64") } }, label: "PDF" };
+  if (IMAGE_TYPES.includes(file.type)) return { part: { type: "image", mimeType: file.type, data: Buffer.from(buffer).toString("base64") }, label: "imagem" };
+  if (file.type === "application/pdf" || extension === "pdf") return { part: { type: "file", mimeType: "application/pdf", data: Buffer.from(buffer).toString("base64") }, label: "PDF" };
   let text: string;
   if (SHEET_EXTENSIONS.includes(extension)) {
     text = await sheetToText(buffer).catch(() => {
@@ -103,15 +105,7 @@ async function filePart(file: File): Promise<{ part: Part; label: string }> {
   }
   if (!text.trim()) throw new ApiError(422, `"${file.name}" está vazio.`);
   if (text.length > MAX_TEXT_CHARS) throw new ApiError(422, `"${file.name}" tem conteúdo demais para uma leitura só. Exporte um período menor.`);
-  return { part: { text: `Conteúdo do arquivo "${file.name}":\n\n${text}` }, label: extension.toUpperCase() };
-}
-
-function parseJson(text: string | undefined): unknown {
-  try {
-    return JSON.parse(text ?? "");
-  } catch {
-    return null;
-  }
+  return { part: { type: "text", text: `Conteúdo do arquivo "${file.name}":\n\n${text}` }, label: extension.toUpperCase() };
 }
 
 export function aiConfigured() {
@@ -129,69 +123,63 @@ export async function extractFromFile(file: File, today: string, hint: string | 
     .map((s) => s.description)
     .join(", ");
 
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  let text: string | undefined;
-  try {
-    const response = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
-      contents: [
-        {
-          role: "user",
-          parts: [part, { text: hint ? `Observação da pessoa: ${hint}` : "Extraia os lançamentos deste arquivo." }],
-        },
-      ],
-      config: {
-        systemInstruction: `Você lê arquivos financeiros de uma pessoa no Brasil (fotos de comprovantes e notas fiscais, faturas de cartão em PDF, extratos bancários em PDF/OFX/CSV, planilhas, prints de apps de banco, textos colados) e transforma em lançamentos para o app de finanças dela.
+  const byName = new Map(categories.map((c) => [c.name.toLowerCase(), c]));
+  const model = new ChatGoogleGenerativeAI({ model: process.env.GEMINI_MODEL || DEFAULT_MODEL, apiKey: process.env.GEMINI_API_KEY, temperature: 0, maxRetries: 2 });
+
+  // LangChain pipeline: messages → Gemini with structured output (Zod) → normalized entries → already-added check.
+  const pipeline = RunnableSequence.from([
+    RunnableLambda.from(() => [
+      new SystemMessage(`Você lê arquivos financeiros de uma pessoa no Brasil (fotos de comprovantes e notas fiscais, faturas de cartão em PDF, extratos bancários em PDF/OFX/CSV, planilhas, prints de apps de banco, textos colados como o histórico de pagamentos do Google Pay/Google Wallet) e transforma em lançamentos para o app de finanças dela.
 
 Regras:
 - Um lançamento por compra/transação. Numa nota fiscal de um único estabelecimento, gere um lançamento só com o total (não item por item), a menos que a pessoa peça o contrário.
-- Em extratos e faturas, inclua todas as transações do período, sem pular nenhuma.
+- Em extratos, faturas e históricos colados, inclua todas as transações do período, sem pular nenhuma.
+- Históricos do Google Pay/Wallet costumam vir como blocos "estabelecimento / valor / data" (às vezes com o cartão usado); pagamentos por aproximação com cartão de crédito são credit, com débito são debit. Datas como "12 de nov." ou "ontem" são relativas a hoje.
 - Compras parceladas na fatura: um lançamento com o valor da parcela do mês e a parcela na descrição, ex.: "Magazine Luiza (3/10)".
 - Ignore pagamentos de fatura, transferências entre contas da própria pessoa, aplicações/resgates de investimento, estornos já compensados, saldos, limites, juros previstos e linhas de total.
-- Na dúvida, NÃO chute: deixe o campo null (data, valor, forma de pagamento, categoria) ou a descrição vazia, e explique em "doubt". A pessoa vai revisar e completar tudo antes de salvar.
+- Na dúvida, NÃO chute: omita o campo (data, valor, forma de pagamento, categoria) ou deixe a descrição vazia, e explique em "doubt". A pessoa vai revisar e completar tudo antes de salvar.
 - Valores sempre positivos, em reais. kind = "income" só para dinheiro que entrou (Pix recebido, salário, reembolso).
 - Datas no formato YYYY-MM-DD. Hoje é ${today}; quando o ano não aparece, use o mais recente que não fique no futuro.
-- Forma de pagamento: credit (cartão de crédito/fatura), debit, pix, cash, voucher (VR/VA/Ticket/Alelo/Sodexo/Caju). null se não der pra saber.
-- Categoria: use exatamente um dos nomes da lista, ou null se nenhum servir.
+- Forma de pagamento: credit (cartão de crédito/fatura), debit, pix, cash, voucher (VR/VA/Ticket/Alelo/Sodexo/Caju). Omita se não der pra saber.
+- Categoria: use exatamente um dos nomes da lista; omita se nenhum servir.
 - Descrição curta e reconhecível, reaproveitando quando fizer sentido as descrições que a pessoa já usa: ${known || "(ainda nenhuma)"}.
 
 Categorias disponíveis:
-${categoryList || "(nenhuma)"}`,
-        responseMimeType: "application/json",
-        responseJsonSchema: z.toJSONSchema(extraction),
-        temperature: 0,
-      },
-    });
-    text = response.text;
+${categoryList || "(nenhuma)"}`),
+      new HumanMessage({ content: [part, { type: "text", text: hint ? `Observação da pessoa: ${hint}` : "Extraia os lançamentos deste arquivo." }] }),
+    ]),
+    model.withStructuredOutput(extraction, { name: "lancamentos" }),
+    RunnableLambda.from((parsed: z.infer<typeof extraction>) => ({
+      summary: parsed.summary,
+      entries: parsed.entries
+        .filter((entry) => entry.description.trim() || (entry.amount ?? 0) > 0)
+        .map((entry): ExtractedEntry => {
+          const category = entry.category ? byName.get(entry.category.toLowerCase()) : undefined;
+          return {
+            date: entry.date && /^\d{4}-\d{2}-\d{2}$/.test(entry.date) ? entry.date : null,
+            description: entry.description.trim().slice(0, 120),
+            amount: entry.amount && entry.amount > 0 ? Math.round(entry.amount * 100) / 100 : null,
+            kind: entry.kind,
+            categoryId: category && category.kind === entry.kind ? category.id : null,
+            method: entry.kind === "expense" ? (entry.method ?? null) : null,
+            doubt: entry.doubt ?? null,
+            duplicateOf: null,
+          };
+        }),
+    })),
+    RunnableLambda.from(async (result: { summary: string; entries: ExtractedEntry[] }) => ({ ...result, entries: await markAlreadyAdded(result.entries) })),
+  ]);
+
+  try {
+    return await pipeline.invoke({});
   } catch (error) {
     console.error(error);
-    throw new ApiError(502, "O Gemini não respondeu. Tente de novo em instantes.");
+    throw new ApiError(502, "A IA não conseguiu ler esse arquivo agora. Tente de novo em instantes.");
   }
-  const result = extraction.safeParse(parseJson(text));
-  if (!result.success) throw new ApiError(502, "Não foi possível entender a resposta da IA. Tente de novo.");
-  const parsed = result.data;
-
-  const byName = new Map(categories.map((c) => [c.name.toLowerCase(), c]));
-  const entries: ExtractedEntry[] = parsed.entries
-    .filter((entry) => entry.description.trim() || (entry.amount ?? 0) > 0)
-    .map((entry) => {
-      const category = entry.category ? byName.get(entry.category.toLowerCase()) : undefined;
-      return {
-        date: entry.date && /^\d{4}-\d{2}-\d{2}$/.test(entry.date) ? entry.date : null,
-        description: entry.description.trim().slice(0, 120),
-        amount: entry.amount && entry.amount > 0 ? Math.round(entry.amount * 100) / 100 : null,
-        kind: entry.kind,
-        categoryId: category && category.kind === entry.kind ? category.id : null,
-        method: entry.kind === "expense" ? entry.method : null,
-        doubt: entry.doubt,
-        duplicateOf: null,
-      };
-    });
-  return { entries: await markDuplicates(entries), summary: parsed.summary };
 }
 
-// Same amount within two days of something already registered is most likely the same purchase.
-async function markDuplicates(entries: ExtractedEntry[]) {
+// Anything with the same amount within two days of an entry already registered in that interval is marked as already added.
+async function markAlreadyAdded(entries: ExtractedEntry[]) {
   if (!entries.length) return entries;
   const dates = entries.map((e) => e.date).filter((d): d is string => d !== null).sort();
   if (!dates.length) return entries;
@@ -206,7 +194,7 @@ async function markDuplicates(entries: ExtractedEntry[]) {
     const index = existing.findIndex((row, i) => !used.has(i) && Math.abs(row.amount - amount) < 0.005 && Math.abs(daysBetween(row.date, date)) <= 2);
     if (index < 0) return entry;
     used.add(index);
-    return { ...entry, duplicateOf: existing[index].description };
+    return { ...entry, duplicateOf: `${existing[index].description} (${existing[index].date.slice(8, 10)}/${existing[index].date.slice(5, 7)})` };
   });
 }
 

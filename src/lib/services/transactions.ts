@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, gte, ilike, lte, max, or, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, isNull, lte, max, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, transactions, type CategoryKind, type PaymentMethod } from "@/db/schema";
 import { notFound } from "@/lib/api-errors";
@@ -9,6 +9,7 @@ export type TransactionFilters = {
   from?: string | null;
   to?: string | null;
   categoryId?: string | null;
+  orphansOnly?: boolean;
   method?: PaymentMethod | null;
   kind?: CategoryKind | null;
   q?: string | null;
@@ -20,8 +21,9 @@ export async function listTransactions(filters: TransactionFilters = {}) {
   if (filters.from) conditions.push(gte(transactions.date, filters.from));
   if (filters.to) conditions.push(lte(transactions.date, filters.to));
   if (filters.categoryId) conditions.push(eq(transactions.categoryId, filters.categoryId));
+  if (filters.orphansOnly) conditions.push(isNull(transactions.categoryId));
   if (filters.method) conditions.push(eq(transactions.method, filters.method));
-  if (filters.kind) conditions.push(eq(categories.kind, filters.kind));
+  if (filters.kind) conditions.push(sql`coalesce(${categories.kind}, 'expense') = ${filters.kind}`);
   if (filters.q) {
     const term = `%${filters.q}%`;
     conditions.push(or(ilike(transactions.description, term), ilike(transactions.notes, term))!);
@@ -38,13 +40,13 @@ export async function listTransactions(filters: TransactionFilters = {}) {
       categoryId: transactions.categoryId,
       createdAt: transactions.createdAt,
       updatedAt: transactions.updatedAt,
-      categoryName: categories.name,
-      categoryColor: categories.color,
-      categoryKind: categories.kind,
-      outsideBudget: categories.outsideBudget,
+      categoryName: sql<string>`coalesce(${categories.name}, 'Sem categoria')`,
+      categoryColor: sql<string>`coalesce(${categories.color}, '#94a3b8')`,
+      categoryKind: sql<CategoryKind>`coalesce(${categories.kind}, 'expense')`,
+      outsideBudget: sql<boolean>`coalesce(${categories.outsideBudget}, false)`,
     })
     .from(transactions)
-    .innerJoin(categories, eq(categories.id, transactions.categoryId))
+    .leftJoin(categories, eq(categories.id, transactions.categoryId))
     .where(conditions.length ? and(...conditions) : undefined)
     .orderBy(desc(transactions.date), desc(transactions.createdAt))
     .limit(filters.limit ?? 2000);

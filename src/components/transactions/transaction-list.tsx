@@ -47,7 +47,7 @@ export function TransactionList({ transactions, today }: { transactions: Transac
                         <Amount row={row} className="sm:hidden" />
                       </div>
                       <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted sm:mt-0">
-                        <span>{row.categoryName}</span>
+                        {row.categoryId ? <span>{row.categoryName}</span> : <span className="rounded bg-amber-100 px-1.5 font-semibold text-amber-900">⚠️ sem categoria</span>}
                         {row.method && (
                           <span className="rounded bg-brand-50 px-1.5 font-semibold text-brand-800">
                             {PAYMENT_METHOD_LABELS[row.method].icon} {PAYMENT_METHOD_LABELS[row.method].label}

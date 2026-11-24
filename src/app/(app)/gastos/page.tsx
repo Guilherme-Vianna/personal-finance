@@ -9,7 +9,8 @@ import { EmptyState } from "@/components/ui";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/db/schema";
 import { isPeriod, periodRange, todayISO } from "@/lib/dates";
 import { formatMoney } from "@/lib/format";
-import { listCategories } from "@/lib/services/categories";
+import { OrphanAlert } from "@/components/orphan-alert";
+import { listCategories, orphanCounts } from "@/lib/services/categories";
 import { listTransactions } from "@/lib/services/transactions";
 
 export const metadata: Metadata = { title: "Gastos" };
@@ -34,12 +35,13 @@ async function Transactions({ searchParams }: { searchParams: PageProps<"/gastos
   const q = typeof params.q === "string" ? params.q : "";
   const today = todayISO();
   const { from, to } = periodRange(period, today);
-  const [transactions, categories] = await Promise.all([listTransactions({ from, to, categoryId: categoryId || null, method, q: q || null }), listCategories()]);
+  const [transactions, categories, orphans] = await Promise.all([listTransactions({ from, to, categoryId: categoryId && categoryId !== "sem" ? categoryId : null, orphansOnly: categoryId === "sem", method, q: q || null }), listCategories(), orphanCounts()]);
   const spent = transactions.filter((row) => row.categoryKind === "expense").reduce((sum, row) => sum + row.amount, 0);
   const received = transactions.filter((row) => row.categoryKind === "income").reduce((sum, row) => sum + row.amount, 0);
 
   return (
     <div className="flex flex-col gap-5">
+      {categoryId !== "sem" && <OrphanAlert transactions={orphans.transactions} recurring={0} />}
       <TransactionFilters period={period} categoryId={categoryId} method={method ?? ""} q={q} categories={categories} />
       <p className="text-sm text-muted">
         <strong className="text-ink">{transactions.length}</strong> lançamento(s) · <strong className="text-ink">{formatMoney(spent)}</strong> gastos

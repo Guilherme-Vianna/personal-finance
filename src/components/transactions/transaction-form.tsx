@@ -16,7 +16,7 @@ export type TransactionDraft = {
   date: string;
   description: string;
   amount: number | null;
-  categoryId: string;
+  categoryId: string | null;
   method: PaymentMethod | null;
   lentTo: string | null;
   notes: string | null;

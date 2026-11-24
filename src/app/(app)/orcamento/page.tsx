@@ -13,6 +13,7 @@ import { monthSummary } from "@/lib/budget";
 import { formatMonth, isMonth, lastDayOfMonth, monthOf, todayISO } from "@/lib/dates";
 import { formatMoney, formatPercent, RECURRING_KIND_LABELS } from "@/lib/format";
 import { remainingAmount } from "@/lib/recurring";
+import { OrphanAlert } from "@/components/orphan-alert";
 import { listCategories } from "@/lib/services/categories";
 import { listGoals } from "@/lib/services/goals";
 import { loanPeople } from "@/lib/services/loans";
@@ -57,10 +58,12 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
   const categoryOptions = categories.map(({ id, name, kind }) => ({ id, name, kind }));
   const goalOptions = goals.filter((g) => g.status === "active").map(({ id, name }) => ({ id, name }));
   const installmentsLeft = items.filter((item) => item.kind === "expense" && item.installments && !item.lentTo).reduce((total, item) => total + (remainingAmount(item, month) ?? 0), 0);
+  const orphanItems = items.filter((item) => !item.categoryId && item.kind !== "investment").length;
   const totals = { income: summary.fixedIncome, expense: summary.fixedExpenses, investment: summary.investments };
 
   return (
     <div className="flex flex-col gap-6">
+      {orphanItems > 0 && <OrphanAlert transactions={0} recurring={orphanItems} />}
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <MonthFilters month={month} currentMonth={currentMonth} includeOutside={false} showOutsideToggle={false} />
         <RecurringFormButton categories={categoryOptions} goals={goalOptions} people={people} className="w-full sm:w-auto">

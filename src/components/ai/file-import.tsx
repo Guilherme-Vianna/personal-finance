@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 import type { CategoryKind, PaymentMethod } from "@/db/schema";
 import { ApiClientError, apiRequest } from "@/lib/api-client";
+import { daysBetween } from "@/lib/dates";
 import { formatMoney, moneyToInput, parseMoney, PAYMENT_METHOD_LABELS } from "@/lib/format";
 import { Button, Card, CardTitle, Field, inputClass } from "@/components/ui";
 import { useToast } from "@/components/toast";
@@ -46,6 +47,7 @@ async function shrink(file: File): Promise<Blob> {
 
 function fileIcon(file: File) {
   const ext = file.name.split(".").pop()?.toLowerCase();
+  if (file.name.startsWith("Texto colado")) return "📋";
   if (file.type.startsWith("image/")) return "🖼️";
   if (ext === "pdf") return "📄";
   if (ext === "xlsx" || ext === "xlsm" || ext === "csv" || ext === "tsv") return "📊";
@@ -71,6 +73,7 @@ export function FileImport({ categories, configured, today }: { categories: Cate
   const inputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<FileState[]>([]);
   const [hint, setHint] = useState("");
+  const [pasted, setPasted] = useState("");
   const [reading, setReading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +88,14 @@ export function FileImport({ categories, configured, today }: { categories: Cate
     setFiles((current) => [...current.filter((f) => f.status !== "done"), ...added]);
     setSaved(null);
     setError(null);
+  }
+
+  function addPasted() {
+    const text = pasted.trim();
+    if (!text) return;
+    const count = files.filter((f) => f.file.name.startsWith("Texto colado")).length + 1;
+    addFiles([new File([text], `Texto colado ${count}.txt`, { type: "text/plain" })]);
+    setPasted("");
   }
 
   async function read() {
@@ -115,7 +126,16 @@ export function FileImport({ categories, configured, today }: { categories: Cate
           duplicateOf: entry.duplicateOf,
           source: item.file.name,
         }));
-        setRows((current) => [...current, ...newRows]);
+        // A receipt and the bank statement for the same purchase often arrive in the same batch.
+        setRows((current) => [
+          ...current,
+          ...newRows.map((row) => {
+            if (row.duplicateOf) return row;
+            const amount = parseMoney(row.amount);
+            const twin = current.find((other) => other.source !== row.source && other.date && row.date && parseMoney(other.amount) === amount && Math.abs(daysBetween(other.date, row.date)) <= 2);
+            return twin ? { ...row, include: false, duplicateOf: `"${twin.description}" de ${twin.source} (neste lote)` } : row;
+          }),
+        ]);
         if (data.summary) setSummaries((current) => [...current, `${item.file.name}: ${data.summary}`]);
         setFiles((current) => current.map((f) => (f.id === item.id ? { ...f, status: "done", message: `${newRows.length} lançamento(s)` } : f)));
       } catch (err) {
@@ -229,6 +249,19 @@ export function FileImport({ categories, configured, today }: { categories: Cate
               event.target.value = "";
             }}
           />
+          <Field label="Ou cole um texto" htmlFor={`${id}-pasted`} hint="Ex.: histórico do Google Pay, extrato copiado do app do banco, uma lista de gastos.">
+            <textarea
+              id={`${id}-pasted`}
+              rows={4}
+              className={`${inputClass} font-mono text-sm`}
+              value={pasted}
+              onChange={(event) => setPasted(event.target.value)}
+              placeholder={"Padaria\nR$ 12,50\n12 de nov.\n\nUber\nR$ 23,90\n13 de nov."}
+            />
+            <Button variant="secondary" size="sm" onClick={addPasted} disabled={!pasted.trim()} className="self-start">
+              + Adicionar texto à fila
+            </Button>
+          </Field>
           {files.length > 0 && (
             <ul className="flex flex-col gap-1.5">
               {files.map((item) => (
@@ -279,10 +312,10 @@ export function FileImport({ categories, configured, today }: { categories: Cate
           <Card className="notebook">
             <CardTitle>Como funciona</CardTitle>
             <ul className="flex flex-col gap-2 text-sm text-muted">
-              <li>📂 Envie fotos, PDFs, planilhas ou extratos exportados do banco (OFX/CSV).</li>
+              <li>📂 Envie fotos, PDFs, planilhas ou extratos exportados do banco (OFX/CSV), ou cole um texto (ex.: histórico do Google Pay).</li>
               <li>✨ A IA pré-preenche cada lançamento: data, valor, forma de pagamento e categoria (das suas).</li>
               <li>🤔 Quando fica em dúvida, ela deixa o campo em branco (em amarelo) para você completar.</li>
-              <li>🔁 O que parece já estar lançado vem desmarcado, para não duplicar.</li>
+              <li>✓ O que já está lançado no mesmo período (mesmo valor, até 2 dias de diferença), ou repetido entre os arquivos, vem marcado como &quot;Já adicionado&quot; e desmarcado.</li>
               <li>✅ Nada é salvo sozinho: você revisa, ajusta e salva tudo de uma vez.</li>
             </ul>
           </Card>
@@ -407,7 +440,12 @@ export function FileImport({ categories, configured, today }: { categories: Cate
                       </div>
                     </div>
                     <div className="mt-2 ml-4.5 flex flex-col gap-0.5 text-xs">
-                      {row.duplicateOf && <p className="font-semibold text-sky-800">🔁 Parece já lançado: &quot;{row.duplicateOf}&quot;. Marque se for outro gasto.</p>}
+                      {row.duplicateOf && (
+                        <p className="font-semibold text-sky-800">
+                          <span className="mr-1 rounded bg-sky-100 px-1.5 py-0.5">✓ Já adicionado</span>
+                          {row.duplicateOf}. Marque &quot;Incluir&quot; só se for outro gasto.
+                        </p>
+                      )}
                       {row.doubt && <p className="text-amber-800">🤔 {row.doubt}</p>}
                       {row.include && showErrors && missing.length > 0 && <p className="font-semibold text-danger">Falta: {missing.join(", ")}</p>}
                       <p className="text-muted">{row.source === "manual" ? "✍️ adicionado à mão" : `📎 ${row.source}`}</p>

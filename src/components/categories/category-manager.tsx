@@ -48,11 +48,16 @@ export function CategoryManager({ categories }: { categories: CategoryWithStats[
                 </button>
                 <ConfirmButton
                   title="Apagar categoria?"
-                  message={`"${category.name}" será apagada. Só é possível apagar categorias sem lançamentos.`}
+                  message={
+                    category.transactionsCount + category.recurringCount > 0
+                      ? `"${category.name}" será apagada. ${[category.transactionsCount ? `${category.transactionsCount} lançamento(s)` : null, category.recurringCount ? `${category.recurringCount} item(ns) do orçamento` : null].filter(Boolean).join(" e ")} vão ficar sem categoria (órfãos) até você escolher outra.`
+                      : `"${category.name}" será apagada.`
+                  }
                   className={dangerIconButtonClass}
                   onConfirm={async () => {
-                    await apiRequest(`/api/categories/${category.id}`, { method: "DELETE" });
-                    toast("Categoria apagada");
+                    const result = await apiRequest<{ orphanedTransactions: number; orphanedRecurring: number }>(`/api/categories/${category.id}`, { method: "DELETE" });
+                    const orphans = result.orphanedTransactions + result.orphanedRecurring;
+                    toast(orphans ? `Categoria apagada · ${orphans} item(ns) ficaram sem categoria` : "Categoria apagada");
                     router.refresh();
                   }}
                 >

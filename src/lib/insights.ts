@@ -7,7 +7,7 @@ export type InsightRow = {
   description: string;
   amount: number;
   method: PaymentMethod | null;
-  categoryId: string;
+  categoryId: string | null;
   categoryName: string;
   categoryColor: string;
 };
@@ -17,9 +17,10 @@ export type Segment = { color: string; amount: number; label: string };
 export function segmentsOf(rows: InsightRow[]): Segment[] {
   const byCategory = new Map<string, Segment>();
   for (const row of rows) {
-    const current = byCategory.get(row.categoryId) ?? { color: row.categoryColor, amount: 0, label: row.categoryName };
+    const key = row.categoryId ?? "sem-categoria";
+    const current = byCategory.get(key) ?? { color: row.categoryColor, amount: 0, label: row.categoryName };
     current.amount += row.amount;
-    byCategory.set(row.categoryId, current);
+    byCategory.set(key, current);
   }
   return [...byCategory.values()].sort((a, b) => b.amount - a.amount);
 }

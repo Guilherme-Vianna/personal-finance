@@ -34,6 +34,7 @@ export function TransactionFilters({
       <div className="grid grid-cols-2 gap-2 sm:flex">
         <select aria-label="Categoria" className={`${inputClass} sm:max-w-52`} value={categoryId} onChange={(event) => update({ categoria: event.target.value })}>
           <option value="">Todas as categorias</option>
+          <option value="sem">⚠️ Sem categoria</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}

@@ -30,8 +30,13 @@ export async function dashboardStats({ month, includeOutside, today }: { month: 
       const amount = own.reduce((t, row) => t + row.amount, 0);
       return { id: category.id, name: category.name, color: category.color, outsideBudget: category.outsideBudget, amount, count: own.length, percent: total ? amount / total : 0 };
     })
-    .filter((category) => category.count > 0)
-    .sort((a, b) => b.amount - a.amount);
+    .filter((category) => category.count > 0);
+  const orphans = expenses.filter((row) => !row.categoryId);
+  if (orphans.length) {
+    const amount = orphans.reduce((t, row) => t + row.amount, 0);
+    byCategory.push({ id: "sem-categoria", name: "⚠️ Sem categoria", color: "#94a3b8", outsideBudget: false, amount, count: orphans.length, percent: total ? amount / total : 0 });
+  }
+  byCategory.sort((a, b) => b.amount - a.amount);
 
   const lastDay = month === monthOf(today) ? today : to;
   let running = 0;

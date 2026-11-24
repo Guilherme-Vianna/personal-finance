@@ -63,6 +63,7 @@ export function RecurringList({
                 <p className="font-bold">
                   {item.name}
                   {status && <span className="ml-1.5 rounded bg-slate-100 px-1.5 align-middle text-[10px] font-bold text-slate-500 uppercase">{status}</span>}
+                  {!item.categoryId && item.kind !== "investment" && <span className="ml-1.5 rounded bg-amber-100 px-1.5 align-middle text-[10px] font-bold text-amber-900">⚠️ sem categoria</span>}
                   {item.lentTo && <span className="ml-1.5 rounded bg-violet-50 px-1.5 align-middle text-[10px] font-bold text-violet-800">🤝 emprestado · {item.lentTo}</span>}
                   {installment && <span className="ml-1.5 rounded bg-sky-50 px-1.5 align-middle text-[10px] font-bold text-sky-800">parcela {installment}/{item.installments}</span>}
                 </p>

@@ -6,16 +6,16 @@ Irmão do [Horas na Vida](https://github.com/Guilherme-Vianna/personal-life-hour
 
 - **Painel**: por mês. Quanto ainda dá pra gastar, quanto por dia nos dias que faltam, ritmo ideal × real, balanço do mês (renda − contas − investimentos − gastos), o que está programado no mês, gastos por categoria, por dia, por forma de pagamento e dia da semana, onde mais foi dinheiro e metas.
 - **Gastos**: lançamentos agrupados por dia, com filtros de período, categoria, forma de pagamento e busca; criar/editar/apagar. Gastos e entradas extras.
-- **Importar com IA**: envie fotos, PDFs (fatura, extrato, nota fiscal), planilhas `.xlsx`, CSV, OFX ou TXT, vários de uma vez. O Gemini pré-preenche os lançamentos (data, valor, forma de pagamento e categoria); o que ele não tem certeza fica em branco para você completar, e o que parece já lançado vem desmarcado. Você ajusta (com ações em lote) e salva tudo de uma vez.
+- **Importar com IA**: envie fotos, PDFs (fatura, extrato, nota fiscal), planilhas `.xlsx`, CSV, OFX ou TXT, vários de uma vez, ou cole um texto (ex.: histórico do Google Pay). O Gemini pré-preenche os lançamentos (data, valor, forma de pagamento e categoria); o que ele não tem certeza fica em branco para você completar, e o que já está lançado no mesmo período (mesmo valor, até 2 dias) ou repetido entre os arquivos vem como "✓ Já adicionado" e desmarcado. Você ajusta (com ações em lote) e salva tudo de uma vez.
 - **Orçamento**: rendas, contas fixas e investimentos programados com início e fim (ou sem fim, ou parcelados). Qualquer mês pode ter um ajuste (outro valor ou "pular este mês"). Orçamento pessoal mensal e divisão ideal da renda (padrão 50/20/30).
 - **Metas**: valor-alvo e prazo opcional; depósitos manuais e investimentos programados ligados à meta enchem a barra. Mostra média mensal, previsão e quanto guardar por mês para bater o prazo.
 - **Análises**: janelas de 3, 6 ou 12 meses; gastos por mês contra o orçamento, tendência por categoria, maiores gastos, formas de pagamento, dias da semana e insights automáticos.
 - **Empréstimos**: gastos e parcelas do cartão marcados como "emprestado" para alguém da família. São só registro (não entram no orçamento, no balanço nem na sobra, porque o dinheiro volta); aqui aparecem por pessoa: quanto foi emprestado, quanto voltou, saldo a receber e parcelas que ainda vão cair.
-- **Categorias**: cor, tipo (gasto/entrada) e "fora do orçamento pessoal" (ex.: livros, compras de longo prazo).
+- **Categorias**: cor, tipo (gasto/entrada) e "fora do orçamento pessoal" (ex.: livros, compras de longo prazo). Apagar uma categoria em uso deixa os itens sem categoria (órfãos) e o app avisa para recategorizar.
 
 ## Stack
 
-Next.js 16 (App Router, route handlers em `src/app/api`), React 19, Tailwind CSS v4, Drizzle ORM, Neon (Postgres), Zod, Google Gen AI SDK (Gemini).
+Next.js 16 (App Router, route handlers em `src/app/api`), React 19, Tailwind CSS v4, Drizzle ORM, Neon (Postgres), Zod, LangChain + Gemini.
 
 ## Rodando localmente
 
@@ -53,7 +53,7 @@ Importa a aba **Orcamento** (contas fixas, rendas, investimento, orçamento pess
 | PUT / DELETE | `/api/transactions/:id` | Atualiza / apaga |
 | POST | `/api/transactions/bulk` | Cria vários (usado pela leitura de comprovante) |
 | GET / POST | `/api/categories` | Lista com totais / cria |
-| PUT / DELETE | `/api/categories/:id` | Atualiza / apaga (409 se estiver em uso) |
+| PUT / DELETE | `/api/categories/:id` | Atualiza / apaga (itens que usavam ficam órfãos; retorna quantos) |
 | GET / POST | `/api/recurring` | Rendas, contas fixas e investimentos programados / cria |
 | PUT / DELETE | `/api/recurring/:id` | Atualiza / apaga |
 | PUT / DELETE | `/api/recurring/:id/overrides` | Ajusta um mês (`{month, amount}` ou `{month, skip: true}`) / remove ajuste (`?month=`) |

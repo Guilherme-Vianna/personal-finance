@@ -14,7 +14,8 @@
     "db:import": "tsx scripts/import-xlsx.ts"
   },
   "dependencies": {
-    "@google/genai": "^3.6.1",
+    "@langchain/core": "^1.5.0",
+    "@langchain/google-genai": "^2.3.7",
     "@neondatabase/serverless": "^1.2.0",
     "drizzle-orm": "^0.45.4",
     "exceljs": "^4.4.0",
