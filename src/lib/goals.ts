@@ -65,7 +65,7 @@ export function goalProgress(goal: GoalProgressInput, today: string): GoalProgre
 export const PACE_LABELS: Record<GoalProgress["pace"], { label: string; tone: string }> = {
   done: { label: "Meta batida", tone: "bg-brand-100 text-brand-800" },
   ahead: { label: "Adiantada", tone: "bg-brand-100 text-brand-800" },
-  "on-track": { label: "No ritmo", tone: "bg-lime-100 text-lime-800" },
+  "on-track": { label: "No ritmo", tone: "bg-sky-100 text-sky-800" },
   behind: { label: "Atrasada", tone: "bg-amber-100 text-amber-800" },
   "no-data": { label: "Sem depósitos recentes", tone: "bg-slate-100 text-slate-600" },
 };

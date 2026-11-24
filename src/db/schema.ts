@@ -24,7 +24,7 @@ export const categories = pgTable("categories", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
   description: text("description"),
-  color: text("color").notNull().default("#16a34a"),
+  color: text("color").notNull().default("#2563eb"),
   kind: text("kind", { enum: CATEGORY_KINDS }).notNull().default("expense"),
   outsideBudget: boolean("outside_budget").notNull().default(false),
   ...timestamps,
@@ -37,7 +37,7 @@ export const goals = pgTable("goals", {
   targetAmount: money("target_amount").notNull(),
   deadline: date("deadline", { mode: "string" }),
   status: text("status", { enum: ["active", "completed"] }).notNull().default("active"),
-  color: text("color").notNull().default("#16a34a"),
+  color: text("color").notNull().default("#2563eb"),
   ...timestamps,
 });
 

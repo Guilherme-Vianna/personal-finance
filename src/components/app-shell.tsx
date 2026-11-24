@@ -6,7 +6,7 @@ import { MobileNav, NavLinks } from "@/components/nav-links";
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh">
-      <aside className="chalkboard sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r-8 border-[#8b5e3c] px-4 py-6 text-chalk lg:flex">
+      <aside className="chalkboard sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r-8 border-[#0e1d33] px-4 py-6 text-chalk lg:flex">
         <Link href="/" className="group px-2">
           <p className="font-hand text-3xl leading-none font-bold transition-transform duration-300 ease-(--ease-spring) group-hover:-rotate-2">Grana na Vida</p>
           <p className="mt-1 text-xs text-chalk/60">pra onde seu dinheiro vai</p>

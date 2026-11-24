@@ -18,7 +18,7 @@ const optionalId = z.uuid().nullish().transform((value) => value ?? null);
 export const categoryInput = z.object({
   name: z.string().trim().min(1, "Informe o nome").max(60),
   description: optionalText(300),
-  color: color.default("#16a34a"),
+  color: color.default("#2563eb"),
   kind: z.enum(CATEGORY_KINDS).default("expense"),
   outsideBudget: z.boolean().default(false),
 });
@@ -80,7 +80,7 @@ export const goalInput = z.object({
   targetAmount: amount,
   deadline: isoDate.nullish().transform((value) => value ?? null),
   status: z.enum(["active", "completed"]).default("active"),
-  color: color.default("#16a34a"),
+  color: color.default("#2563eb"),
 });
 
 export const depositInput = z.object({

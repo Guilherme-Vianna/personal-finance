@@ -1,29 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #f0f9f2;
-  --color-brand-100: #dcf1e1;
-  --color-brand-200: #b9e2c4;
-  --color-brand-300: #8acb9e;
-  --color-brand-400: #56ad73;
-  --color-brand-500: #2f9254;
-  --color-brand-600: #217a43;
-  --color-brand-700: #1b6137;
-  --color-brand-800: #184d2e;
-  --color-brand-900: #143f27;
+  --color-brand-50: #eef5ff;
+  --color-brand-100: #d9e8ff;
+  --color-brand-200: #bcd6ff;
+  --color-brand-300: #8ebcfd;
+  --color-brand-400: #5a98f7;
+  --color-brand-500: #3478ef;
+  --color-brand-600: #225ed8;
+  --color-brand-700: #1d4bb3;
+  --color-brand-800: #1d3f8f;
+  --color-brand-900: #1c3770;
 
-  --color-board: #1f4a36;
-  --color-board-dark: #163728;
-  --color-chalk: #f4f1e8;
+  --color-board: #1b3558;
+  --color-board-dark: #122640;
+  --color-chalk: #f1f4fa;
   --color-pencil: #f2c230;
   --color-pencil-soft: #fdf3cf;
 
-  --color-canvas: #f5f7f2;
+  --color-canvas: #f3f6fb;
   --color-surface: #ffffff;
-  --color-ink: #13261b;
-  --color-muted: #5f6f65;
-  --color-border: #dfe6dc;
-  --color-border-strong: #a9b8ab;
+  --color-ink: #111f33;
+  --color-muted: #5a6a80;
+  --color-border: #dbe3ee;
+  --color-border-strong: #a6b5c9;
   --color-danger: #c2410c;
   --color-danger-soft: #fff1e8;
 
@@ -33,15 +33,15 @@
   --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --shadow-card: 0 1px 2px rgb(19 38 27 / 0.04), 0 2px 8px -2px rgb(19 38 27 / 0.06);
-  --shadow-lift: 0 2px 4px rgb(19 38 27 / 0.05), 0 12px 28px -8px rgb(19 38 27 / 0.18);
+  --shadow-card: 0 1px 2px rgb(17 31 51 / 0.04), 0 2px 8px -2px rgb(17 31 51 / 0.06);
+  --shadow-lift: 0 2px 4px rgb(17 31 51 / 0.05), 0 12px 28px -8px rgb(17 31 51 / 0.18);
 }
 
 body {
   background-color: var(--color-canvas);
   background-image:
     radial-gradient(60rem 30rem at 100% -10%, rgb(242 194 48 / 0.08), transparent 60%),
-    radial-gradient(50rem 30rem at -10% 0%, rgb(47 146 84 / 0.07), transparent 60%);
+    radial-gradient(50rem 30rem at -10% 0%, rgb(52 120 239 / 0.08), transparent 60%);
   background-attachment: fixed;
   color: var(--color-ink);
 }
@@ -54,7 +54,7 @@ body {
 }
 
 .notebook {
-  background-image: repeating-linear-gradient(to bottom, transparent 0 31px, rgb(33 122 67 / 0.07) 31px 32px);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 31px, rgb(34 94 216 / 0.07) 31px 32px);
 }
 
 html {
@@ -88,7 +88,7 @@ html:has(main input:not([type="checkbox"]):focus) .mobile-nav {
 }
 
 dialog::backdrop {
-  background: rgb(19 38 27 / 0.45);
+  background: rgb(17 31 51 / 0.45);
   backdrop-filter: blur(2px);
 }
 
@@ -155,7 +155,7 @@ dialog::backdrop {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, rgb(185 226 196 / 0.35) 0%, rgb(220 241 225 / 0.8) 50%, rgb(185 226 196 / 0.35) 100%);
+  background: linear-gradient(90deg, rgb(188 214 255 / 0.35) 0%, rgb(217 232 255 / 0.8) 50%, rgb(188 214 255 / 0.35) 100%);
   background-size: 200% 100%;
   animation: shimmer 1.4s linear infinite;
 }

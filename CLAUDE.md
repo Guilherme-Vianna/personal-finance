@@ -38,7 +38,8 @@ Sibling of personal-life-hours-tracker: same stack, UX and conventions.
 - AI receipt import (`src/lib/services/ai-import.ts`) uses Gemini via `@google/genai` with a JSON schema generated from Zod
   (`z.toJSONSchema`) and validates the reply with the same schema. Nothing is saved until the user confirms the review.
 - No authentication by design (single-user app); don't introduce it unless asked.
-- Theme, motion and mobile rules are the same as the sibling app: tokens in `src/app/globals.css`, `PageSuspense`, `stagger`,
+- Theme is blue (navy chalkboard `board`, `brand-*` blues, yellow `pencil` accent) so it is not confused with the green sibling app.
+- Motion and mobile rules are the same as the sibling app: tokens in `src/app/globals.css`, `PageSuspense`, `stagger`,
   `lift`, `Modal` as bottom sheet below `sm`, `FormActions`, 16px inputs on phones, 40px touch targets, `pointer-fine:` for
   hover-only UI, explicit grid columns with `minmax(0,…)`, rtl scrollers for charts.
 

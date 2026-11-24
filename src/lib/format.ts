@@ -50,15 +50,15 @@ export const RECURRING_KIND_LABELS: Record<RecurringKind, { label: string; plura
 };
 
 export const CATEGORY_COLORS = [
-  "#16a34a",
-  "#0d9488",
-  "#65a30d",
+  "#2563eb",
   "#0891b2",
+  "#0d9488",
+  "#16a34a",
   "#ca8a04",
   "#ea580c",
   "#dc2626",
   "#db2777",
   "#7c3aed",
-  "#2563eb",
+  "#4f46e5",
   "#475569",
 ];

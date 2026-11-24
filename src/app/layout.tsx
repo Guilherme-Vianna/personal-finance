@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Controle de gastos, orçamento do mês e metas de dinheiro",
 };
 
-export const viewport: Viewport = { themeColor: "#1f4a36", viewportFit: "cover", interactiveWidget: "resizes-content" };
+export const viewport: Viewport = { themeColor: "#1b3558", viewportFit: "cover", interactiveWidget: "resizes-content" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
