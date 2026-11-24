@@ -9,7 +9,7 @@ export type BudgetSettings = {
   splitInvestments: number;
 };
 
-export type BudgetTransaction = { date: string; amount: number; categoryKind: CategoryKind; outsideBudget: boolean };
+export type BudgetTransaction = { date: string; amount: number; categoryKind: CategoryKind; outsideBudget: boolean; lentTo?: string | null };
 
 // Mirrors the "Orçamento" sheet: fixed income minus fixed bills, personal budget and investments is the
 // planned leftover; the personal budget (plus extra income) minus what was spent is what is left to spend.
@@ -19,25 +19,31 @@ export function monthSummary({
   settings,
   recurring,
   transactions,
+  repayments = [],
 }: {
   month: string;
   today: string;
   settings: BudgetSettings;
   recurring: RecurringLike[];
   transactions: BudgetTransaction[];
+  repayments?: { date: string; amount: number }[];
 }) {
   const own = recurring.filter((item) => occursIn(item, month));
-  const total = (kind: RecurringLike["kind"]) => own.filter((item) => item.kind === kind).reduce((t, item) => t + amountFor(item, month), 0);
-  const fixedIncome = total("income");
-  const fixedExpenses = total("expense");
-  const investments = total("investment");
+  const total = (rows: RecurringLike[]) => rows.reduce((t, item) => t + amountFor(item, month), 0);
+  const fixedIncome = total(own.filter((item) => item.kind === "income"));
+  const fixedExpenses = total(own.filter((item) => item.kind === "expense" && !item.lentTo));
+  const lentInstallments = total(own.filter((item) => item.kind === "expense" && item.lentTo));
+  const investments = total(own.filter((item) => item.kind === "investment"));
 
   const inMonth = transactions.filter((t) => monthOf(t.date) === month);
   const add = (rows: BudgetTransaction[]) => rows.reduce((t, row) => t + row.amount, 0);
   const extraIncome = add(inMonth.filter((t) => t.categoryKind === "income"));
   const budgetExtra = add(inMonth.filter((t) => t.categoryKind === "income" && !t.outsideBudget));
-  const spent = add(inMonth.filter((t) => t.categoryKind === "expense" && !t.outsideBudget));
-  const spentOutside = add(inMonth.filter((t) => t.categoryKind === "expense" && t.outsideBudget));
+  const spent = add(inMonth.filter((t) => t.categoryKind === "expense" && !t.outsideBudget && !t.lentTo));
+  const spentOutside = add(inMonth.filter((t) => t.categoryKind === "expense" && t.outsideBudget && !t.lentTo));
+  const lentSpent = add(inMonth.filter((t) => t.categoryKind === "expense" && t.lentTo));
+  const lent = lentInstallments + lentSpent;
+  const repaid = repayments.filter((r) => monthOf(r.date) === month).reduce((t, r) => t + r.amount, 0);
 
   const personalBudget = settings.personalBudget + budgetExtra;
   const remaining = personalBudget - spent;
@@ -51,8 +57,8 @@ export function monthSummary({
   const idealSpent = (personalBudget * pacedDays) / days;
 
   const income = fixedIncome + extraIncome;
-  const plannedLeftover = income - fixedExpenses - settings.personalBudget - investments;
-  const actualLeftover = income - fixedExpenses - investments - spent - spentOutside;
+  const plannedLeftover = income - fixedExpenses - lentInstallments - settings.personalBudget - investments;
+  const actualLeftover = income + repaid - fixedExpenses - investments - spent - spentOutside - lent;
 
   const split = [
     { key: "essentials", label: "Contas fixas", percent: settings.splitEssentials, actual: fixedExpenses },
@@ -74,6 +80,9 @@ export function monthSummary({
     budgetExtra,
     spent,
     spentOutside,
+    lent,
+    lentInstallments,
+    repaid,
     remaining,
     usedPercent: personalBudget > 0 ? (spent / personalBudget) * 100 : spent > 0 ? 100 : 0,
     idealPercent: (pacedDays / days) * 100,

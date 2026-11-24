@@ -22,6 +22,7 @@ export type RecurringDraft = {
   startMonth: string;
   endMonth: string | null;
   installments: number | null;
+  lentTo: string | null;
   notes: string | null;
   active: boolean;
 };
@@ -34,6 +35,7 @@ type EndMode = "forever" | "until" | "installments";
 export function RecurringFormButton({
   categories,
   goals,
+  people = [],
   initial,
   kind = "expense",
   children,
@@ -42,6 +44,7 @@ export function RecurringFormButton({
 }: {
   categories: CategoryOption[];
   goals: GoalOption[];
+  people?: string[];
   initial?: RecurringDraft;
   kind?: RecurringKind;
   children: ReactNode;
@@ -55,13 +58,27 @@ export function RecurringFormButton({
         {children}
       </Button>
       <Modal open={open} onClose={() => setOpen(false)} title={initial ? `Editar ${RECURRING_KIND_LABELS[initial.kind].label.toLowerCase()}` : "Programar no orçamento"} wide>
-        {open && <RecurringForm categories={categories} goals={goals} initial={initial} defaultKind={kind} onDone={() => setOpen(false)} />}
+        {open && <RecurringForm categories={categories} goals={goals} people={people} initial={initial} defaultKind={kind} onDone={() => setOpen(false)} />}
       </Modal>
     </>
   );
 }
 
-function RecurringForm({ categories, goals, initial, defaultKind, onDone }: { categories: CategoryOption[]; goals: GoalOption[]; initial?: RecurringDraft; defaultKind: RecurringKind; onDone: () => void }) {
+function RecurringForm({
+  categories,
+  goals,
+  people,
+  initial,
+  defaultKind,
+  onDone,
+}: {
+  categories: CategoryOption[];
+  goals: GoalOption[];
+  people: string[];
+  initial?: RecurringDraft;
+  defaultKind: RecurringKind;
+  onDone: () => void;
+}) {
   const id = useId();
   const router = useRouter();
   const toast = useToast();
@@ -78,6 +95,8 @@ function RecurringForm({ categories, goals, initial, defaultKind, onDone }: { ca
   const [installments, setInstallments] = useState(initial?.installments ? String(initial.installments) : "");
   const [paid, setPaid] = useState("");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [lent, setLent] = useState(Boolean(initial?.lentTo));
+  const [lentTo, setLentTo] = useState(initial?.lentTo ?? "");
   const [active, setActive] = useState(initial?.active ?? true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -102,6 +121,7 @@ function RecurringForm({ categories, goals, initial, defaultKind, onDone }: { ca
     if (!/^\d{4}-\d{2}$/.test(startMonth)) local.startMonth = "Informe o mês de início";
     if (endMode === "until" && (!/^\d{4}-\d{2}$/.test(endMonth) || endMonth < startMonth)) local.endMonth = "Precisa ser igual ou depois do início";
     if (endMode === "installments" && !(Number.isInteger(total) && total >= 2)) local.installments = "Ao menos 2 parcelas";
+    if (kind === "expense" && lent && !lentTo.trim()) local.lentTo = "Para quem você emprestou?";
     setErrors(local);
     if (Object.keys(local).length) return;
 
@@ -117,6 +137,7 @@ function RecurringForm({ categories, goals, initial, defaultKind, onDone }: { ca
         startMonth,
         endMonth: endMode === "until" ? endMonth : null,
         installments: endMode === "installments" ? total : null,
+        lentTo: kind === "expense" && lent ? lentTo.trim() : null,
         notes,
         active,
       };
@@ -237,6 +258,24 @@ function RecurringForm({ categories, goals, initial, defaultKind, onDone }: { ca
           {total}x de {parsedAmount > 0 ? formatMoney(parsedAmount) : "…"}
           {parsedAmount > 0 && ` = ${formatMoney(parsedAmount * total)}`} · última parcela em {formatMonth(addMonths(startMonth, total - 1))}
         </p>
+      )}
+
+      {kind === "expense" && (
+        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border p-3">
+          <Toggle checked={lent} onChange={setLent} label="🤝 Emprestado (parcela de outra pessoa no seu cartão)" />
+          {lent ? (
+            <Field label="Para quem?" htmlFor={`${id}-lent`} error={errors.lentTo}>
+              <input id={`${id}-lent`} list={`${id}-people`} className={inputClass} value={lentTo} onChange={(e) => setLentTo(e.target.value)} placeholder="Ex.: Vó, Mãe, Irmão" autoComplete="off" />
+              <datalist id={`${id}-people`}>
+                {people.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
+            </Field>
+          ) : (
+            <p className="text-xs text-muted">Sai do seu bolso todo mês, mas não conta como conta sua: vira valor a receber em Empréstimos.</p>
+          )}
+        </div>
       )}
 
       <Field label="Observações (opcional)" htmlFor={`${id}-notes`}>

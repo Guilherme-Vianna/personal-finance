@@ -67,6 +67,7 @@ export const recurring = pgTable("recurring", {
   startMonth: text("start_month").notNull(),
   endMonth: text("end_month"),
   installments: integer("installments"),
+  lentTo: text("lent_to"),
   notes: text("notes"),
   active: boolean("active").notNull().default(true),
   ...timestamps,
@@ -99,11 +100,22 @@ export const transactions = pgTable(
       .notNull()
       .references(() => categories.id, { onDelete: "restrict" }),
     method: text("method", { enum: PAYMENT_METHODS }),
+    lentTo: text("lent_to"),
     notes: text("notes"),
     ...timestamps,
   },
   (table) => [index("transactions_date_idx").on(table.date), index("transactions_category_idx").on(table.categoryId)],
 );
+
+// Money someone paid back for what was lent to them (transactions or installments with lentTo).
+export const loanRepayments = pgTable("loan_repayments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  person: text("person").notNull(),
+  date: date("date", { mode: "string" }).notNull(),
+  amount: money("amount").notNull(),
+  notes: text("notes"),
+  ...timestamps,
+});
 
 export const settings = pgTable("settings", {
   id: integer("id").primaryKey().default(1),
@@ -127,4 +139,5 @@ export type GoalDeposit = typeof goalDeposits.$inferSelect;
 export type Recurring = typeof recurring.$inferSelect;
 export type RecurringOverride = typeof recurringOverrides.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
+export type LoanRepayment = typeof loanRepayments.$inferSelect;
 export type Settings = typeof settings.$inferSelect;

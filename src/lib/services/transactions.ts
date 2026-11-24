@@ -33,6 +33,7 @@ export async function listTransactions(filters: TransactionFilters = {}) {
       description: transactions.description,
       amount: transactions.amount,
       method: transactions.method,
+      lentTo: transactions.lentTo,
       notes: transactions.notes,
       categoryId: transactions.categoryId,
       createdAt: transactions.createdAt,

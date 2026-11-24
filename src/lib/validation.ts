@@ -29,6 +29,7 @@ export const transactionInput = z.object({
   amount,
   categoryId: z.uuid("Escolha uma categoria"),
   method: z.enum(PAYMENT_METHODS).nullish().transform((value) => value ?? null),
+  lentTo: optionalText(60),
   notes: optionalText(500),
 });
 
@@ -43,6 +44,7 @@ export const recurringInput = z
     startMonth: month,
     endMonth: month.nullish().transform((value) => value ?? null),
     installments: z.coerce.number().int().min(2, "Ao menos 2 parcelas").max(480).nullish().transform((value) => value ?? null),
+    lentTo: optionalText(60),
     notes: optionalText(300),
     active: z.boolean().default(true),
   })
@@ -51,6 +53,7 @@ export const recurringInput = z
   .transform((item) => ({
     ...item,
     goalId: item.kind === "investment" ? item.goalId : null,
+    lentTo: item.kind === "expense" ? item.lentTo : null,
     endMonth: item.installments ? addMonths(item.startMonth, item.installments - 1) : item.endMonth,
   }));
 
@@ -63,6 +66,13 @@ export const overrideInput = z
   })
   .refine((o) => o.skip || (o.amount !== null && o.amount !== undefined), { path: ["amount"], message: "Informe o valor deste mês" })
   .transform((o) => ({ month: o.month, amount: o.skip ? null : (o.amount ?? null), notes: o.notes }));
+
+export const repaymentInput = z.object({
+  person: z.string().trim().min(1, "Informe quem pagou").max(60),
+  date: isoDate,
+  amount,
+  notes: optionalText(300),
+});
 
 export const goalInput = z.object({
   name: z.string().trim().min(1, "Informe o nome").max(100),

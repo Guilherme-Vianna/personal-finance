@@ -5,16 +5,23 @@ import { byMethod, byWeekday, computeInsights, segmentsOf, topDescriptions } fro
 import { amountFor, installmentOf, overrideFor, plannedMonths } from "@/lib/recurring";
 import { listCategories } from "./categories";
 import { listRecurring } from "./recurring";
+import { listRepayments } from "./loans";
 import { getSettings } from "./settings";
 import { listTransactions } from "./transactions";
 
 export async function dashboardStats({ month, includeOutside, today }: { month: string; includeOutside: boolean; today: string }) {
   const from = `${month}-01`;
   const to = lastDayOfMonth(month);
-  const [settings, recurringItems, rows, categories] = await Promise.all([getSettings(), listRecurring(), listTransactions({ from, to, limit: 100_000 }), listCategories()]);
+  const [settings, recurringItems, rows, categories, repayments] = await Promise.all([
+    getSettings(),
+    listRecurring(),
+    listTransactions({ from, to, limit: 100_000 }),
+    listCategories(),
+    listRepayments({ from, to }),
+  ]);
 
-  const summary = monthSummary({ month, today, settings, recurring: recurringItems, transactions: rows });
-  const expenses = rows.filter((row) => row.categoryKind === "expense" && (includeOutside || !row.outsideBudget));
+  const summary = monthSummary({ month, today, settings, recurring: recurringItems, transactions: rows, repayments });
+  const expenses = rows.filter((row) => row.categoryKind === "expense" && !row.lentTo && (includeOutside || !row.outsideBudget));
   const total = expenses.reduce((t, row) => t + row.amount, 0);
 
   const byCategory = categories
@@ -63,5 +70,6 @@ export type DashboardStats = Awaited<ReturnType<typeof dashboardStats>>;
 export async function insightsStats({ windowMonths, includeOutside, today }: { windowMonths: number; includeOutside: boolean; today: string }) {
   const from = `${addMonths(monthOf(today), -(windowMonths * 2 - 1))}-01`;
   const [rows, settings] = await Promise.all([listTransactions({ from, to: today, kind: "expense", limit: 100_000 }), getSettings()]);
-  return computeInsights(includeOutside ? rows : rows.filter((row) => !row.outsideBudget), today, windowMonths, settings.personalBudget);
+  const own = rows.filter((row) => !row.lentTo && (includeOutside || !row.outsideBudget));
+  return computeInsights(own, today, windowMonths, settings.personalBudget);
 }

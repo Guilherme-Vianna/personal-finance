@@ -5,6 +5,7 @@ import type { CategoryKind, PaymentMethod } from "@/db/schema";
 import { ApiClientError, apiRequest } from "@/lib/api-client";
 import { addDays } from "@/lib/dates";
 import { formatMoney, moneyToInput, parseMoney, PAYMENT_METHOD_LABELS } from "@/lib/format";
+import { Toggle } from "@/components/filters";
 import { Button, Field, FormActions, hasFinePointer, inputClass } from "@/components/ui";
 
 export type CategoryOption = { id: string; name: string; color: string; kind: CategoryKind; outsideBudget: boolean };
@@ -17,6 +18,7 @@ export type TransactionDraft = {
   amount: number | null;
   categoryId: string;
   method: PaymentMethod | null;
+  lentTo: string | null;
   notes: string | null;
 };
 
@@ -40,12 +42,14 @@ export function chipClass(selected: boolean) {
 export function TransactionForm({
   categories,
   suggestions,
+  people = [],
   today,
   initial,
   onDone,
 }: {
   categories: CategoryOption[];
   suggestions: SuggestionOption[];
+  people?: string[];
   today: string;
   initial?: Partial<TransactionDraft>;
   onDone: (message: string) => void;
@@ -61,6 +65,8 @@ export function TransactionForm({
   const [amount, setAmount] = useState(moneyToInput(initial?.amount));
   const [method, setMethod] = useState<PaymentMethod | null>(initial?.id ? (initial.method ?? null) : (initial?.method ?? lastMethod()));
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [lent, setLent] = useState(Boolean(initial?.lentTo));
+  const [lentTo, setLentTo] = useState(initial?.lentTo ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
@@ -90,12 +96,13 @@ export function TransactionForm({
     if (!description.trim()) local.description = "Informe a descrição";
     if (!categoryId) local.categoryId = "Escolha uma categoria";
     if (!(parsed > 0)) local.amount = "Informe um valor maior que zero";
+    if (kind === "expense" && lent && !lentTo.trim()) local.lentTo = "Para quem você emprestou?";
     setErrors(local);
     if (Object.keys(local).length) return;
 
     setBusy(true);
     try {
-      const body = { date, description, categoryId, amount: parsed, method: kind === "expense" ? method : null, notes: notes || null };
+      const body = { date, description, categoryId, amount: parsed, method: kind === "expense" ? method : null, lentTo: kind === "expense" && lent ? lentTo.trim() : null, notes: notes || null };
       await apiRequest(editing ? `/api/transactions/${initial!.id}` : "/api/transactions", { method: editing ? "PUT" : "POST", body });
       try {
         if (method) localStorage.setItem(LAST_METHOD_KEY, method);
@@ -229,6 +236,24 @@ export function TransactionForm({
             ))}
           </div>
         </Field>
+      )}
+
+      {kind === "expense" && (
+        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border p-3">
+          <Toggle checked={lent} onChange={setLent} label="🤝 Emprestado (foi pra outra pessoa)" />
+          {lent ? (
+            <Field label="Para quem?" htmlFor={`${id}-lent`} error={errors.lentTo}>
+              <input id={`${id}-lent`} list={`${id}-people`} className={inputClass} value={lentTo} onChange={(event) => setLentTo(event.target.value)} placeholder="Ex.: Vó, Mãe, Irmão" autoComplete="off" />
+              <datalist id={`${id}-people`}>
+                {people.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
+            </Field>
+          ) : (
+            <p className="text-xs text-muted">Não conta no seu orçamento e entra em Empréstimos como valor a receber.</p>
+          )}
+        </div>
       )}
 
       <Field label="Observações (opcional)" htmlFor={`${id}-notes`}>

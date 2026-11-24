@@ -15,6 +15,7 @@ import { formatMoney, formatPercent, RECURRING_KIND_LABELS } from "@/lib/format"
 import { remainingAmount } from "@/lib/recurring";
 import { listCategories } from "@/lib/services/categories";
 import { listGoals } from "@/lib/services/goals";
+import { loanPeople } from "@/lib/services/loans";
 import { listRecurring } from "@/lib/services/recurring";
 import { getSettings } from "@/lib/services/settings";
 import { listTransactions } from "@/lib/services/transactions";
@@ -44,24 +45,25 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
   const today = todayISO();
   const currentMonth = monthOf(today);
   const month = isMonth(params.mes) ? params.mes : currentMonth;
-  const [items, settings, categories, goals, monthRows] = await Promise.all([
+  const [items, settings, categories, goals, monthRows, people] = await Promise.all([
     listRecurring(),
     getSettings(),
     listCategories(),
     listGoals(today),
     listTransactions({ from: `${month}-01`, to: lastDayOfMonth(month), limit: 100_000 }),
+    loanPeople(),
   ]);
   const summary = monthSummary({ month, today, settings, recurring: items, transactions: monthRows });
   const categoryOptions = categories.map(({ id, name, kind }) => ({ id, name, kind }));
   const goalOptions = goals.filter((g) => g.status === "active").map(({ id, name }) => ({ id, name }));
-  const installmentsLeft = items.filter((item) => item.kind === "expense" && item.installments).reduce((total, item) => total + (remainingAmount(item, month) ?? 0), 0);
-  const totals = { income: summary.fixedIncome, expense: summary.fixedExpenses, investment: summary.investments };
+  const installmentsLeft = items.filter((item) => item.kind === "expense" && item.installments && !item.lentTo).reduce((total, item) => total + (remainingAmount(item, month) ?? 0), 0);
+  const totals = { income: summary.fixedIncome, expense: summary.fixedExpenses + summary.lentInstallments, investment: summary.investments };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <MonthFilters month={month} currentMonth={currentMonth} includeOutside={false} showOutsideToggle={false} />
-        <RecurringFormButton categories={categoryOptions} goals={goalOptions} className="w-full sm:w-auto">
+        <RecurringFormButton categories={categoryOptions} goals={goalOptions} people={people} className="w-full sm:w-auto">
           + Programar
         </RecurringFormButton>
       </div>
@@ -85,11 +87,11 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
                   </h2>
                   <p className="text-xs text-muted">{hint}</p>
                 </div>
-                <RecurringFormButton variant="secondary" kind={kind} categories={categoryOptions} goals={goalOptions} className="shrink-0">
+                <RecurringFormButton variant="secondary" kind={kind} categories={categoryOptions} goals={goalOptions} people={people} className="shrink-0">
                   + Adicionar
                 </RecurringFormButton>
               </div>
-              <RecurringList items={items} kind={kind} categories={categoryOptions} goals={goalOptions} month={month} />
+              <RecurringList items={items} kind={kind} categories={categoryOptions} goals={goalOptions} people={people} month={month} />
             </section>
           ))}
         </div>
@@ -129,6 +131,7 @@ async function Budget({ searchParams }: { searchParams: PageProps<"/orcamento">[
               <li>✏️ Um mês diferente? Use o 📆 para trocar o valor ou pular só aquele mês.</li>
               <li>📊 Tudo entra automaticamente no painel do mês. Nada precisa ser lançado à mão.</li>
               <li>🐷 Investimentos ligados a uma meta contam como depósito a cada mês que passa.</li>
+              <li>🤝 Parcela de outra pessoa no seu cartão? Marque como emprestada: sai do bolso, mas vira valor a receber.</li>
             </ul>
           </Card>
         </div>

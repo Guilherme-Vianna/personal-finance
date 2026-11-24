@@ -28,7 +28,21 @@ function IconCalendar() {
   );
 }
 
-export function RecurringList({ items, kind, categories, goals, month }: { items: RecurringRow[]; kind: RecurringKind; categories: CategoryOption[]; goals: GoalOption[]; month: string }) {
+export function RecurringList({
+  items,
+  kind,
+  categories,
+  goals,
+  people,
+  month,
+}: {
+  items: RecurringRow[];
+  kind: RecurringKind;
+  categories: CategoryOption[];
+  goals: GoalOption[];
+  people: string[];
+  month: string;
+}) {
   const router = useRouter();
   const toast = useToast();
   const own = items.filter((item) => item.kind === kind).sort((a, b) => amountFor(b, month) - amountFor(a, month) || b.amount - a.amount);
@@ -49,6 +63,7 @@ export function RecurringList({ items, kind, categories, goals, month }: { items
                 <p className="font-bold">
                   {item.name}
                   {status && <span className="ml-1.5 rounded bg-slate-100 px-1.5 align-middle text-[10px] font-bold text-slate-500 uppercase">{status}</span>}
+                  {item.lentTo && <span className="ml-1.5 rounded bg-violet-50 px-1.5 align-middle text-[10px] font-bold text-violet-800">🤝 emprestado · {item.lentTo}</span>}
                   {installment && <span className="ml-1.5 rounded bg-sky-50 px-1.5 align-middle text-[10px] font-bold text-sky-800">parcela {installment}/{item.installments}</span>}
                 </p>
                 <p className="text-xs text-muted">
@@ -74,7 +89,7 @@ export function RecurringList({ items, kind, categories, goals, month }: { items
                     <IconCalendar />
                     <span className="sr-only">Ajustar um mês de {item.name}</span>
                   </OverrideButton>
-                  <RecurringFormButton variant="ghost" categories={categories} goals={goals} initial={item} className="size-10 p-0! sm:size-9">
+                  <RecurringFormButton variant="ghost" categories={categories} goals={goals} people={people} initial={item} className="size-10 p-0! sm:size-9">
                     <IconPencil />
                     <span className="sr-only">Editar {item.name}</span>
                   </RecurringFormButton>

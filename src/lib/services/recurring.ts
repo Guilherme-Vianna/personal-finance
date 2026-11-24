@@ -19,6 +19,7 @@ export async function listRecurring() {
         startMonth: recurring.startMonth,
         endMonth: recurring.endMonth,
         installments: recurring.installments,
+        lentTo: recurring.lentTo,
         notes: recurring.notes,
         active: recurring.active,
         categoryName: categories.name,

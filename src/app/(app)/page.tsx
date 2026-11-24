@@ -177,6 +177,8 @@ function MonthOverview({ summary }: { summary: MonthSummary }) {
     { label: "Contas fixas", value: -summary.fixedExpenses, sign: "−" },
     { label: "Investimentos", value: -summary.investments, sign: "−" },
     { label: "Gastos pessoais", value: -(summary.spent + summary.spentOutside), sign: "−" },
+    ...(summary.lent ? [{ label: "🤝 Emprestado", value: -summary.lent, sign: "−" }] : []),
+    ...(summary.repaid ? [{ label: "🤝 Recebido de volta", value: summary.repaid, sign: "+" }] : []),
   ];
   return (
     <Card>
@@ -234,6 +236,7 @@ function BillsCard({ stats, month, today }: { stats: DashboardStats; month: stri
                   <p className="text-xs text-muted">
                     {RECURRING_KIND_LABELS[bill.kind].label}
                     {bill.installment && ` · parcela ${bill.installment}/${bill.installments}`}
+                    {bill.lentTo && ` · 🤝 ${bill.lentTo}`}
                     {bill.override && (skipped ? " · pulado" : " · valor ajustado")}
                   </p>
                 </div>

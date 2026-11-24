@@ -12,6 +12,7 @@ export type RecurringLike = {
   endMonth: string | null;
   installments: number | null;
   active: boolean;
+  lentTo?: string | null;
   overrides?: MonthOverride[];
 };
 

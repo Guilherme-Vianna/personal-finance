@@ -10,6 +10,7 @@ Irmão do [Horas na Vida](https://github.com/Guilherme-Vianna/personal-life-hour
 - **Orçamento**: rendas, contas fixas e investimentos programados com início e fim (ou sem fim, ou parcelados). Qualquer mês pode ter um ajuste (outro valor ou "pular este mês"). Orçamento pessoal mensal e divisão ideal da renda (padrão 50/20/30).
 - **Metas**: valor-alvo e prazo opcional; depósitos manuais e investimentos programados ligados à meta enchem a barra. Mostra média mensal, previsão e quanto guardar por mês para bater o prazo.
 - **Análises**: janelas de 3, 6 ou 12 meses; gastos por mês contra o orçamento, tendência por categoria, maiores gastos, formas de pagamento, dias da semana e insights automáticos.
+- **Empréstimos**: gastos e parcelas do cartão marcados como "emprestado" para alguém da família. Saem do bolso mas não do seu orçamento; aqui aparecem por pessoa: quanto foi emprestado, quanto voltou, saldo a receber e parcelas que ainda vão cair.
 - **Categorias**: cor, tipo (gasto/entrada) e "fora do orçamento pessoal" (ex.: livros, compras de longo prazo).
 
 ## Stack
@@ -60,6 +61,9 @@ Importa a aba **Orcamento** (contas fixas, rendas, investimento, orçamento pess
 | PUT / DELETE | `/api/goals/:id` | Atualiza / apaga |
 | POST | `/api/goals/:id/deposits` | Depósito (valor negativo = retirada) |
 | DELETE | `/api/deposits/:id` | Apaga depósito |
+| GET | `/api/loans` | Empréstimos por pessoa (emprestado, devolvido, saldo, parcelas futuras) |
+| GET | `/api/loans/people` | Nomes já usados |
+| POST / DELETE | `/api/loans/repayments[/:id]` | Registra / apaga pagamento recebido |
 | GET / PUT | `/api/settings` | Orçamento pessoal e divisão da renda |
 | GET | `/api/stats` | Painel do mês (`month`, `includeOutside`) |
 | GET | `/api/descriptions` | Sugestões de descrições já usadas |

@@ -8,7 +8,7 @@ import { Button, IconPlus, Modal } from "@/components/ui";
 import { useToast } from "@/components/toast";
 import { TransactionForm, type CategoryOption, type SuggestionOption, type TransactionDraft } from "./transaction-form";
 
-type Options = { categories: CategoryOption[]; suggestions: SuggestionOption[] };
+type Options = { categories: CategoryOption[]; suggestions: SuggestionOption[]; people: string[] };
 
 export function useTransactionModal() {
   const router = useRouter();
@@ -17,8 +17,12 @@ export function useTransactionModal() {
 
   async function open(initial?: Partial<TransactionDraft>) {
     setState({ initial, options: null });
-    const [categories, suggestions] = await Promise.all([apiRequest<CategoryOption[]>("/api/categories"), apiRequest<SuggestionOption[]>("/api/descriptions")]);
-    setState({ initial, options: { categories, suggestions } });
+    const [categories, suggestions, people] = await Promise.all([
+      apiRequest<CategoryOption[]>("/api/categories"),
+      apiRequest<SuggestionOption[]>("/api/descriptions"),
+      apiRequest<string[]>("/api/loans/people"),
+    ]);
+    setState({ initial, options: { categories, suggestions, people } });
   }
 
   function close() {

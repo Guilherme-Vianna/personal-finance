@@ -53,6 +53,7 @@ export function TransactionList({ transactions, today }: { transactions: Transac
                             {PAYMENT_METHOD_LABELS[row.method].icon} {PAYMENT_METHOD_LABELS[row.method].label}
                           </span>
                         )}
+                        {row.lentTo && <span className="rounded bg-violet-50 px-1.5 font-semibold text-violet-800">🤝 emprestado · {row.lentTo}</span>}
                         {row.outsideBudget && <span className="rounded bg-slate-100 px-1.5 font-semibold text-slate-600">fora do orçamento</span>}
                         {row.notes && <span className="line-clamp-1 max-w-full">· {row.notes}</span>}
                       </p>
